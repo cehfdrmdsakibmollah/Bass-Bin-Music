@@ -184,3 +184,12 @@
 
 /* Mobile Aura camera keyframe presets */
 .motion-preset-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.motion-preset-buttons .btn{white-space:normal;min-height:44px;font-size:11px;padding:10px}
+
+
+/* Real signature Phonk posters (not recolored generic gradient placeholders). */
+.signature-card{position:relative;border-color:#64506e!important;background:linear-gradient(180deg,#201424,#0c1019)!important}
+.signature-card:before{content:"SIGNATURE";position:absolute;top:5px;right:5px;z-index:2;padding:3px 5px;border-radius:3px;background:#ff4f7b;color:#fff;font:700 8px ui-monospace,monospace;letter-spacing:.07em}
+.signature-card .signature-poster{position:relative;overflow:hidden;padding:0;background:#050509!important}
+.signature-card .signature-poster img{display:block;width:100%;height:100%;object-fit:cover;max-height:180px;border-radius:6px}
+.signature-card:hover,.signature-card:focus-visible,.signature-card.preview-chosen{border-color:#ff698b!important;box-shadow:0 0 0 1px #ff698b66,0 0 24px #ff4f7b35!important}
+@media(max-width:760px){.signature-card .signature-poster{min-height:135px}.signature-card .signature-poster img{height:145px;max-height:none}}
