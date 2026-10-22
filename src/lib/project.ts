@@ -33,7 +33,7 @@ function validTrack(t:unknown,total:number):boolean {
   const x=t as Track;
   if(!enums(x.kind,['audio','image','video','text','visualizer','effect'])||!plain(x.id,110)||!x.id||!plain(x.label,100)||
     typeof x.hidden!=='boolean'||typeof x.muted!=='boolean'||!finite(x.start,0,total)||!finite(x.duration,.1,total)||x.start+x.duration>total+.011)return false;
-  if(x.text!==undefined&&!plain(x.text,100)||x.assetId!==undefined&&!plain(x.assetId,110)||x.clipStart!==undefined&&!finite(x.clipStart,0,60000)||
+  if(x.text!==undefined&&!plain(x.text,100)||x.assetId!==undefined&&!plain(x.assetId,110)||x.clipStart!==undefined&&!finite(x.clipStart,0,60000)||x.sourceDuration!==undefined&&!finite(x.sourceDuration,0.1,600)||
     x.volume!==undefined&&!finite(x.volume,0,2)||x.motion!==undefined&&!validMotion(x.motion)||
     x.transition!==undefined&&!enums(x.transition,['none','fade','slide','zoom'])||
     x.fontSize!==undefined&&!finite(x.fontSize,.015,.24)||x.fontColor!==undefined&&!color(x.fontColor)||
@@ -53,7 +53,7 @@ export function normalizeProject(data:unknown):StudioProject|null {
   if(!data||typeof data!=='object'||Array.isArray(data))return null;
   const p=data as Partial<StudioProject>;
   if(p.schemaVersion!==1||!plain(p.id,100)||!p.id||!plain(p.name,100)||!Array.isArray(p.tracks)||!p.settings||typeof p.settings!=='object')return null;
-  if(!finite(p.duration,1,180)||!plain(p.template,100)||!finite(p.createdAt,0,1e16)||!finite(p.updatedAt,0,1e16))return null;
+  if(!finite(p.duration,1,600)||!plain(p.template,100)||!finite(p.createdAt,0,1e16)||!finite(p.updatedAt,0,1e16))return null;
   const s=p.settings;
   if(!enums(s.aspect,['16:9','9:16','1:1'])||![24,30,60].includes(s.fps)||![720,1080,1280].includes(s.width)||
     !enums(s.mode,['bars','circle','wave','particles','mirror','spiral','rings'])||!color(s.background)||!color(s.primary)||!color(s.secondary)||!plain(s.title,100))return null;
