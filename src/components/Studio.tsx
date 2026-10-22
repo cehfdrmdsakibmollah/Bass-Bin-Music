@@ -767,8 +767,27 @@ export default function Studio(){
           </div>
         </>}
         {panel==='templates'&&<>
-          <div className="panel-heading"><h2>Ultra Aura & Phonk Templates</h2><small>{templates.length+AURA_PRESETS.length} editable</small></div>
-          <p className="muted detail">Three reference-led original layouts are featured first. Preview before Apply; the original timeline/media remain unchanged. Use your own song for real beat response.</p>
+          <div className="panel-heading"><h2>Phonk Video Maker</h2><small>Montage / original visualizers</small></div>
+          <p className="muted detail">For a real Phonk edit, upload your music and at least two distinct video/photo clips. Choose a beat-cut style below. Visualizer-only templates are separate from footage montage presets.</p>
+          {templateCategory==='Phonk Montage'&&<section className="montage-builder" aria-label="Phonk montage builder">
+            <div className="montage-status"><strong>{project.tracks.filter(t=>(t.kind==='image'||t.kind==='video')&&t.assetId&&!t.hidden).length} media layers · {audioTrack?'Music attached':'No song yet'}</strong>
+              <small>Uses only your uploaded footage. Music beat markers are estimates. No unlicensed stock clips are inserted.</small>
+            </div>
+            <label className="btn outline full montage-upload">＋ Import images / videos
+              <input aria-label="Import montage footage" type="file" hidden multiple accept="image/*,video/*" onChange={async e=>{
+                const files=Array.from(e.currentTarget.files||[]);e.currentTarget.value='';
+                for(const file of files)await upload(file.type.startsWith('video/')?'video':'image',file);
+                if(files.length)setWarning(`${files.length} file(s) processed. Add a song from Audio, then create the montage.`);
+              }}/>
+            </label>
+            <button className="btn outline full" onClick={()=>openMobilePanel('assets')}>♫ Add music using Assets</button>
+            <div className="montage-style-list">{MONTAGE_STYLES.map((style,i)=><button className={`montage-style montage-style-${style.id} ${montageStyle===style.id?'active':''}`} key={style.id} aria-pressed={montageStyle===style.id} onClick={()=>setMontageStyle(style.id)}>
+              <span className="montage-style-art" aria-hidden="true"><i/><i/><i/></span>
+              <span><b>{style.name}</b><small>{style.description}</small><em>{i===0?'KICK · GLITCH · CUT':i===1?'DRIFT · SPEED · WHIP':'GRAIN · VHS · FADE'}</em></span>
+            </button>)}</div>
+            <button className="btn primary full" onClick={buildMontage}>⚡ Create actual beat-synced Phonk edit</button>
+            <p className="muted detail">Every cut remains editable. You can split/trim/reorder clips and Undo. Export at 9:16 after reviewing the live preview.</p>
+          </section>}
           {!audioTrack&&<button className="btn outline full" onClick={async()=>{
             try{const response=await fetch('/demo-beat.wav');if(!response.ok)throw Error('Demo unavailable');
               const file=new File([await response.blob()],'BASS BIN Original Demo.wav',{type:'audio/wav'});
@@ -777,7 +796,7 @@ export default function Studio(){
             }catch(e){setWarning(e instanceof Error?e.message:'Could not import demo beat');}
           }}>♫ Load original demo beat to test visualizer</button>}
           <div className="template-filters" role="group" aria-label="Template categories">
-            {['All','Signature Phonk','Phonk','Drift','Avee Inspired','NCS Inspired','Ultra Aura','Dark','Bass'].map(cat=><button key={cat} aria-pressed={templateCategory===cat} onClick={()=>setTemplateCategory(cat)}>{cat}</button>)}
+            {['Phonk Montage','Signature Phonk','Avee Inspired','NCS Inspired','Spectrum (Legacy)','All','Ultra Aura'].map(cat=><button key={cat} aria-pressed={templateCategory===cat} onClick={()=>setTemplateCategory(cat)}>{cat}</button>)}
           </div>
           {previewTemplate&&<div className="template-confirm" role="status">
             <strong>Previewing: {templates.find(t=>t.slug===previewTemplate)?.name||AURA_PRESETS.find(t=>t.slug===previewTemplate)?.title}</strong>
