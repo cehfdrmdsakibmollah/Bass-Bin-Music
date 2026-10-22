@@ -1,6 +1,7 @@
 import type {Settings,Track} from './types';
 import {evaluateMotion,trackTransition} from './advanced.ts';
 import {beatEnvelope,type BeatSync} from './beat-sync.ts';
+import {drawPhonkBackdrop,drawPhonkHero,isSignatureMode} from './phonk-scenes.ts';
 export type MediaCanvasAsset=HTMLImageElement|HTMLVideoElement;
 const active=(track:Track,time:number)=>!track.hidden&&time>=track.start&&time<track.start+track.duration;
 const rand=(seed:number)=>{const v=Math.sin(seed*127.1+78.233)*43758.5453123;return v-Math.floor(v);};
@@ -72,6 +73,7 @@ export function drawFrame(ctx:CanvasRenderingContext2D,settings:Settings,tracks:
       for(let y=0;y<h;y+=grid){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
     }
   }
+  if(isSignatureMode(settings.mode))drawPhonkBackdrop(ctx,settings.mode,w,h,time,settings.primary,settings.secondary);
   for(const t of tracks)if((t.kind==='image'||t.kind==='video')&&active(t,time))drawLayer(ctx,t,time,w,h,min,media,settings);
   if(effects){
     for(let i=0;i<Math.round(settings.particles*1.4);i++){
@@ -85,6 +87,12 @@ export function drawFrame(ctx:CanvasRenderingContext2D,settings:Settings,tracks:
     const amp=(i:number)=>Math.max(.04,audioData.length?audioData[Math.floor(i%count/count*audioData.length)]/255:.10)*(.5+strength*.85);
     ctx.save();ctx.shadowColor=settings.primary;ctx.shadowBlur=effects?settings.glow/100*min*.05:0;
     switch(settings.mode){
+      case 'phonk-skull':case 'phonk-drift':case 'phonk-tape':{
+        const artTrack=tracks.slice().reverse().find(t=>(t.kind==='image'||t.kind==='video')&&active(t,time)&&t.assetId&&media.has(t.assetId));
+        const art=artTrack?.assetId?media.get(artTrack.assetId)||null:null;
+        drawPhonkHero(ctx,settings.mode,settings,audioData,time,beatPulse,beatDrop,art);
+        break;
+      }
       case 'bars':case 'mirror':{
         const span=w*.69,x0=(w-span)/2,bar=span/count*.68,base=settings.mode==='bars'?h*.70:h*.51;
         for(let i=0;i<count;i++){
