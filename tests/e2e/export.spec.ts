@@ -21,7 +21,7 @@ test('a short phonk audio project exports a real downloadable video in Chromium'
   const pendingDownload = page.waitForEvent('download', { timeout: 45_000 });
   await exportButton.click();
   const download = await pendingDownload;
-  expect(download.suggestedFilename()).toMatch(/^bass-bin-\\d+\\.(webm|mp4)$/);
+  expect(download.suggestedFilename()).toMatch(/^bass-bin-\d+\.(webm|mp4)$/);
   expect(await download.failure()).toBeNull();
 
   const localPath = await download.path();
