@@ -102,3 +102,82 @@
  .music-mix-controls{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(max-width:360px){.music-mix-controls{grid-template-columns:1fr}}
+
+
+/* BASS BIN MUSIC v0.8 — dedicated touch-first studio, not a squashed desktop editor. */
+.mobile-quick-actions,.mobile-selected-tools,.mobile-sheet-heading,.mobile-sheet-panel-chooser,
+.mobile-sheet-backdrop,.mobile-export-trigger{display:none}
+.template-filters{display:flex;gap:7px;overflow-x:auto;padding:3px 0 12px;margin-bottom:9px;scrollbar-width:thin}
+.template-filters button{white-space:nowrap;flex:0 0 auto;border:1px solid #35506c;border-radius:999px;padding:9px 12px;background:#17223b;color:#a9cde5;font-size:11px}
+.template-filters button[aria-pressed="true"]{background:#263d5c;border-color:#49dbf3;color:#e9f9ff}
+.mobile-template-grid .preview-chosen{border:2px solid #59f1ff;box-shadow:0 0 0 2px #4ac7ff44,0 0 22px #37c8ff44}
+.template-confirm{position:sticky;top:0;z-index:3;background:#162641;border:1px solid #51c7ec;border-radius:12px;padding:12px;margin:8px 0 12px;box-shadow:0 8px 24px #0007}
+.template-confirm strong,.template-confirm small{display:block;margin:3px 0 6px}.template-confirm strong{color:#86e9ff}.template-confirm small{color:#abc9e2;font-size:11px}
+@media(max-width:760px){
+  .studio-root{padding-bottom:calc(77px + env(safe-area-inset-bottom));width:100%;overflow-x:clip}
+  .studio-header{position:sticky;top:0;z-index:18;min-height:54px;padding:7px 9px;gap:7px;background:#090d1aee;backdrop-filter:blur(10px)}
+  .studio-header .mini{font-size:11px;margin-right:auto}.studio-header .mini img{width:31px;height:31px}
+  .studio-file{order:3;flex-basis:100%;flex-direction:row;justify-content:space-between;gap:5px}
+  .studio-file input{min-width:0;width:min(65vw,250px);text-align:left;font-size:12px}
+  .studio-file small{font-size:9px;text-align:right}
+  .header-actions{gap:5px}.header-actions .btn.ghost.tiny:first-child{display:none}
+  .header-actions .btn.primary.tiny:not(.mobile-export-trigger){display:none}
+  .mobile-export-trigger{display:inline-flex;align-items:center;justify-content:center;min-height:39px;min-width:65px}
+  .studio-columns{display:block;min-height:unset}
+  .studio-workspace{padding:10px 9px 24px;grid-column:auto;grid-row:auto;width:100%;min-width:0}
+  .preview-meta{margin-bottom:9px;gap:6px}
+  .preview-meta small{display:none}.preview-meta b{font-size:11px}.preview-meta .chip-dot{font-size:9px;padding:5px}
+  .video-shell{padding:6px;border-radius:11px;min-height:120px}
+  .video-stage{max-height:min(44dvh,440px);max-width:100%;width:auto}
+  .video-stage canvas{max-height:min(44dvh,440px);max-width:100%;object-fit:contain}
+  .mobile-quick-actions{display:flex;gap:6px;overflow-x:auto;padding:2px 0 9px;scrollbar-width:thin}
+  .mobile-quick-actions button{flex:0 0 auto;min-height:42px;border-radius:10px;border:1px solid #2d647e;background:#131f38;color:#b6faff;padding:7px 12px;font-size:11px;font-weight:750}
+  .mobile-quick-actions button:first-child{background:linear-gradient(110deg,#3b205f,#16466a);border-color:#9868ee;color:#fff;box-shadow:0 0 12px #5c48c144}
+  .player-controls{gap:6px;margin:12px 0;flex-wrap:wrap}
+  .player-controls .play-btn{width:44px;height:44px}
+  .player-controls .timecode{font-size:11px}
+  .player-controls .transport-slider{min-width:110px;flex:1 1 calc(100% - 156px);min-height:40px}
+  .player-controls .btn.tiny,.player-controls .snap-control,.player-controls .aspect-control{min-height:35px;font-size:10px}
+  .mobile-selected-tools{display:block;background:#0f1729;border:1px solid #263956;padding:9px;border-radius:12px;margin:4px 0 12px}
+  .mobile-selected-name{display:block;color:#9cc8ea;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:8px}
+  .mobile-tool-actions{display:flex;overflow-x:auto;gap:7px}
+  .mobile-tool-actions button{flex:1 0 auto;min-width:57px;min-height:43px;background:#1b2945;border:1px solid #33496e;border-radius:9px;color:#daf6ff;font-size:11px}
+  .mobile-tool-actions button:disabled{opacity:.35}
+  .timeline{max-width:100%;overflow-x:auto;border-radius:12px}
+  .timeline-top{min-width:0;display:flex;flex-direction:column;gap:7px}
+  .timeline-top h2{font-size:12px}
+  .timeline-actions{max-width:100%;min-width:0;overflow-x:auto;display:flex;gap:6px;padding-bottom:5px}
+  .timeline-actions .btn{white-space:nowrap;min-height:40px;flex:0 0 auto}
+  .timeline-ruler{min-width:390px;margin-left:110px}
+  .track-list{min-width:430px}
+  .track-row{min-width:430px;grid-template-columns:105px minmax(275px,1fr) 40px}
+  .track-name{font-size:10px;min-height:44px}.track-segment{touch-action:pan-y;min-height:35px}
+  .track-move button{min-height:25px}
+  .mobile-tool-tabs{position:fixed;left:0;right:0;bottom:0;z-index:55;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));width:100%;gap:3px;padding:6px 5px max(7px,env(safe-area-inset-bottom));background:#090e1ded;border-top:1px solid #31415c;backdrop-filter:blur(15px)}
+  .mobile-tool-tabs button{min-width:0;min-height:53px;padding:6px 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:10px;background:#151e33;color:#c0d4ec;font-size:20px}
+  .mobile-tool-tabs button span{font-size:9px;white-space:nowrap;letter-spacing:0}
+  .mobile-tool-tabs button[aria-current="page"]{background:#234266;color:#86ecff;box-shadow:inset 0 0 0 1px #4bdff766}
+  .mobile-sheet-backdrop{position:fixed;inset:0;z-index:38;display:block;background:#0009;border:0;border-radius:0;width:100%;height:100%}
+  .studio-side,.studio-right{display:block;position:fixed;left:0;right:0;top:auto;bottom:calc(65px + env(safe-area-inset-bottom));z-index:43;grid-column:auto;grid-row:auto;min-width:0;width:100%;max-height:min(71dvh,720px);overscroll-behavior:contain;overflow-y:auto;border:1px solid #354866;border-bottom:0;border-radius:22px 22px 0 0;padding:12px 16px 24px;background:#10182a;visibility:hidden;opacity:0;transform:translateY(106%);pointer-events:none;transition:transform .2s ease,opacity .2s ease,visibility .2s}
+  .studio-side.mobile-sheet-open,.studio-right.mobile-export-open{visibility:visible;opacity:1;transform:translateY(0);pointer-events:auto}
+  .mobile-sheet-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:-12px;z-index:8;background:#10182a;padding:9px 0 13px;margin-bottom:6px;border-bottom:1px solid #2c3c5c}
+  .mobile-sheet-heading b{font-size:14px}.mobile-sheet-heading button{min-height:42px;min-width:42px;background:#253249;color:#dcecff;border-radius:10px}
+  .sheet-grip{display:block;height:5px;width:36px;border-radius:999px;background:#7a889c;position:absolute;top:0;left:calc(50% - 18px)}
+  .mobile-sheet-panel-chooser{display:flex;overflow-x:auto;gap:7px;margin:2px 0 14px;scrollbar-width:thin;padding-bottom:8px}
+  .mobile-sheet-panel-chooser button{flex:0 0 auto;min-height:42px;border:1px solid #30445e;border-radius:9px;padding:8px 11px;color:#bed5ec;background:#1a2940;font-size:11px;text-transform:capitalize}
+  .mobile-sheet-panel-chooser button[aria-current="page"]{border-color:#52edff;background:#244365;color:#fff}
+  .studio-side .field input,.studio-side .field select,.studio-side .field textarea{min-height:44px}
+  .studio-side .slider-field input[type="range"]{min-height:38px}
+  .upload-button,.studio-side .btn,.studio-right .btn{min-height:44px}
+  .studio-right .export-preview{display:none}
+  .studio-right .panel-heading,.studio-right .help-link,.studio-right .detail{display:flex}
+  .studio-right .export-main{margin:14px 0}
+  .studio-right .status-list{display:grid}
+  .studio-right .divider{display:block}
+  .studio-side .mini-templates.mobile-template-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .mobile-template-grid .mini-template{min-width:0;padding:7px;min-height:140px}
+  .mobile-template-grid .mini-art{width:100%;min-height:86px}
+  .studio-bottom{display:none}
+}
+@media(max-width:380px){.mobile-tool-tabs button span{font-size:8px}.mobile-quick-actions button{padding:7px 9px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){.studio-side,.studio-right{transition:none!important}}
