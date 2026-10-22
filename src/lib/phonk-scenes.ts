@@ -160,7 +160,7 @@ function ring(ctx:CanvasRenderingContext2D,cx:number,cy:number,r:number,fftData:
  }ctx.restore();
 }
 function textSmall(ctx:CanvasRenderingContext2D,label:string,x:number,y:number,min:number,color:string,align:CanvasTextAlign='center'){
- ctx.save();ctx.font=\`700 \${Math.max(10,Math.round(min*.021))}px ui-monospace,monospace\`;ctx.textBaseline='middle';ctx.textAlign=align;
+ ctx.save();ctx.font=`700 ${Math.max(10,Math.round(min*.021))}px ui-monospace,monospace`;ctx.textBaseline='middle';ctx.textAlign=align;
  ctx.fillStyle=color;ctx.globalAlpha=.8;ctx.fillText(label,x,y,min*.82);ctx.restore();
 }
 /** The three layouts are intentionally not just recolored rings. */
@@ -201,7 +201,7 @@ export function drawPhonkHero(ctx:CanvasRenderingContext2D,mode:SignatureMode,se
    ctx.strokeStyle='#a39494';ctx.lineWidth=Math.max(2,min*.005);ctx.strokeRect(-cw/2,-ch/2,cw,ch);
    const labelY=-ch*.35;
    ctx.fillStyle='#c9c0aa';ctx.fillRect(-cw*.43,labelY,cw*.86,ch*.28);
-   ctx.fillStyle='#251a21';ctx.font=\`900 \${Math.max(10,min*.033)}px Arial\`;ctx.textAlign='center';
+   ctx.fillStyle='#251a21';ctx.font=`900 ${Math.max(10,min*.033)}px Arial`;ctx.textAlign='center';
    ctx.fillText('BASS BIN / SIDE A',0,labelY+ch*.18,cw*.8);
    for(const sign of [-1,1]){
     const reelX=sign*cw*.215,reelY=ch*.17,reelR=ch*.21;
