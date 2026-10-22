@@ -593,7 +593,7 @@ export default function Studio(){
   const reset=()=>{
     if(!confirm('Reset all project settings and timeline tracks? Your stored media files are not deleted.'))return;
     audio.current?.pause();audio.current?.removeAttribute('src');audio.current?.load();
-    const empty=createProject(wallNow());commit(()=>empty);setSelected('visualizer');seek(0);
+    const empty=createProject(wallNow());commit(()=>empty);setSelected('visualizer');setTemplateCategory('Phonk Montage');setPanel('templates');setMobileSheet('closed');seek(0);
   };
   useEffect(()=>{
     const down=(e:KeyboardEvent)=>{
@@ -668,7 +668,7 @@ export default function Studio(){
     <audio ref={audio} preload="metadata" aria-hidden="true" />
     <header className="studio-header"><Link href="/" className="brand mini"><img src="/bass-bin-logo.png" alt=""/> <span>BASS BIN <em>MUSIC</em></span></Link>
       <div className="studio-file"><input aria-label="Project name" value={project.name} maxLength={70} onChange={e=>commit(p=>({...p,name:e.target.value}))}/><small>{saved}</small></div>
-      <div className="header-actions"><button className="btn primary tiny mobile-export-trigger" onClick={openExportSheet}>Next →</button><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={historyStats.undo===0} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={historyStats.redo===0} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
+      <div className="header-actions"><button className="btn ghost tiny new-phonk-trigger" onClick={reset} title="Create a fresh Phonk edit and preserve existing media files">＋ New Phonk</button><button className="btn primary tiny mobile-export-trigger" onClick={openExportSheet}>Next →</button><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={historyStats.undo===0} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={historyStats.redo===0} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
     </header>
     {mobileSheet!=='closed'&&<button className="mobile-sheet-backdrop" aria-label="Close mobile tool panel" onClick={()=>setMobileSheet('closed')}/>}
      <main className="studio-columns">
