@@ -29,6 +29,7 @@ test('new original Avee/NCS modes and animated Phonk transitions are available',
  await page.goto('/studio');
  const nav=page.getByRole('navigation',{name:'Studio panels'});
  await nav.getByRole('button',{name:/templates/i}).click();
+ await page.getByRole('group',{name:'Template categories'}).getByRole('button',{name:'NCS Inspired'}).click();
  await page.getByRole('button',{name:/NCS Inspired Prism Halo/}).click();
  await expect(page.getByText(/Previewing: NCS Inspired Prism Halo/)).toBeVisible();
  await page.getByRole('button',{name:/Apply Template/}).click();
