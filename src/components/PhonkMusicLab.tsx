@@ -90,7 +90,7 @@ export default function PhonkMusicLab({onUse}:{onUse:(file:File)=>Promise<void>}
  try{const p=plan();durationLabel=`A: ${fmt(p.aLength)} · B: ${fmt(p.bLength)} · overlap ${p.overlap.toFixed(1)}s · output ${fmt(p.duration)}`;}catch{}
  return <div className="music-lab">
    <div className="panel-heading"><h2>Phonk Music Lab</h2><small>Two-track creator mixer</small></div>
-   <p className="muted detail">BandLab-inspired **Phonk-only mini-mixer**. Combine two audio files with editable trims, BPM-independent speed, crossfade, levels, bass shelf and gentle compression. Mixing does not remove copyright.</p>
+   <p className="muted detail">BandLab-inspired Phonk-only mini-mixer. Combine two audio files with editable trims, BPM-independent speed, crossfade, levels, bass shelf and gentle compression. Mixing does not remove copyright.</p>
    <div className="music-decks">{(['a','b'] as const).map(slot=><div className="music-deck" key={slot}>
      <strong>DECK {slot.toUpperCase()}</strong>
      <label className="btn outline full">♫ {sources[slot]?'Replace song':'Import song'}
