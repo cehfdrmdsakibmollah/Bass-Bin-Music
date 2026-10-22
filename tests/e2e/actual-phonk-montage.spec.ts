@@ -23,5 +23,5 @@ test('montage refuses synthetic assets and makes a real 9:16 edit from two impor
   await expect(page.getByText(/Created \d+ editable clips/)).toBeVisible();
   await expect(page.getByLabel('Video aspect ratio')).toHaveValue('9:16');
   await expect(page.locator('[data-track^="montage-"]').first()).toBeVisible();
-  await expect(page.getByRole('button',{name:/Undo/})).toBeEnabled();
+  await expect(page.getByTitle('Undo (Ctrl+Z)')).toBeEnabled();
 });
