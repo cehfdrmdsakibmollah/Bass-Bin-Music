@@ -298,7 +298,7 @@ export default function Studio(){
       const track=parseUpload(kind,file);
       await saveAsset({id:track.assetId!,kind,name:file.name,file});
       const beatMap=await attachAsset(track.assetId!);
-      const sourceDuration=kind==='video'?videoDurations.current.get(track.assetId!):beatMap?.duration||(audio.current&&Number.isFinite(audio.current.duration)?audio.current.duration:20);
+      const sourceDuration=kind==='video'?(videoDurations.current.get(track.assetId!)??0):(beatMap?.duration||(audio.current&&Number.isFinite(audio.current.duration)?audio.current.duration:20));
       commit(p=>{
         const length=kind==='audio'?Math.min(MAX_COMPOSITION_SECONDS,Math.max(1,sourceDuration)):p.duration;
         const base=kind==='audio'?resizeComposition(p,length):p;
