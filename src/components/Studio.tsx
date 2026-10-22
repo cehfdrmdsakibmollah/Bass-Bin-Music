@@ -604,6 +604,48 @@ export default function Studio(){
           {(['audio','image','video'] as const).map(kind=><label className="upload-button" key={kind}><span>{kind==='audio'?'♫':kind==='image'?'▧':'▶'}</span><div><b>Import {kind}</b><small>{kind==='audio'?'MP3 · WAV · OGG':kind==='image'?'PNG · JPG · WebP':'MP4 · WebM'}</small></div><input type="file" hidden accept={`${kind}/*`} onChange={e=>{void upload(kind,e.target.files?.[0]);e.currentTarget.value='';}} /></label>)}
           <button className="btn outline full" onClick={async()=>{try{const r=await fetch('/demo-beat.wav');if(!r.ok)throw Error('Demo audio unavailable');const b=await r.blob();await upload('audio',new File([b],'Original Demo Beat.wav',{type:'audio/wav'}))}catch(e){setWarning(e instanceof Error?e.message:'Demo loading failed')}}}>▶ Try original demo beat</button>
         </div><div className="panel-divider"/><h3>Timeline assets</h3>{project.tracks.filter(t=>t.assetId).length===0?<p className="empty-message">Your uploaded files appear here.</p>:project.tracks.filter(t=>t.assetId).map(t=><button key={t.id} className="asset-chip" onClick={()=>{setSelected(t.id);setPanel('inspector')}}><span>{icon[t.kind]}</span>{t.label}</button>)}<div className="panel-divider"/><label className="btn outline full">↑ Import project JSON<input hidden type="file" accept="application/json,.json" onChange={e=>{void importJson(e.target.files?.[0]);e.currentTarget.value=''}} /></label></>}
+        {panel==='music'&&<PhonkMusicLab onUse={async file=>{await upload('audio',file);setPanel('beats');}}/>}
+        {panel==='fxlab'&&<>
+          <div className="panel-heading"><h2>Phonk FX & Transitions</h2><small>Creative recipes</small></div>
+          <p className="muted detail">Original beat-driven effects inspired by Phonk and Avee aesthetics; not a verified popularity ranking. Each changes live Canvas/export settings and transitions, with Undo support.</p>
+          <label className="field">Apply transition to
+            <select aria-label="FX target scope" value={fxScope} onChange={e=>setFxScope(e.target.value as 'selected'|'all')}>
+              <option value="all">All visual/text clips</option><option value="selected">Selected visual/text clip</option>
+            </select>
+          </label>
+          <div className="phonk-fx-grid">{PHONK_FX_PRESETS.map(fx=><button key={fx.id} className="phonk-fx-card" title={fx.description} onClick={()=>{
+            const changed=applyPhonkFx(projectRef.current,fx.id,fxScope,selected);
+            if(changed===projectRef.current){setWarning('Select an image/video/text clip or use All clips.');return;}
+            commit(()=>changed);setWarning(`${fx.title} applied to the video. Undo is available.`);
+          }}>
+            <i style={{background:`linear-gradient(135deg,${fx.values.primary||'#1a88cb'},${fx.values.secondary||'#ab3fff'})`}}/>
+            <span><b>{fx.title}</b><small>{fx.description}</small></span>
+          </button>)}</div>
+          <div className="panel-divider"/><h3>Manual clip transition</h3>
+          <label className="field">Selected clip
+            <select aria-label="Select transition" disabled={!active||!['image','video','text'].includes(active.kind)} value={active?.transition||'none'} onChange={e=>edit({transition:e.target.value as Track['transition']})}>
+              {(['none','fade','slide','zoom','whip','glitch','spin'] as const).map(v=><option key={v} value={v}>{v}</option>)}
+            </select>
+          </label>
+          <p className="muted detail">Flashes are capped in the renderer, but sensitive viewers may still experience discomfort. Preview before publishing.</p>
+        </>}
+        {panel==='discover'&&<>
+          <div className="panel-heading"><h2>Phonk Trend Finder</h2><small>Live source links</small></div>
+          <p className="muted detail">Open source-platform music charts/searches to investigate emerging Phonk sounds. These are external discovery tools, not scraped rankings or downloadable songs.</p>
+          <label className="field">Search Phonk styles
+            <input aria-label="Phonk discovery query" value={trendQuery} maxLength={70} onChange={e=>setTrendQuery(e.target.value)}/>
+          </label>
+          <div className="phonk-discovery">
+            <a href={`https://www.youtube.com/results?search_query=${encodeURIComponent(trendQuery+' 2026 phonk')}`} target="_blank" rel="noopener noreferrer"><b>▶ YouTube Phonk search</b><small>Explore tracks and video edits</small></a>
+            <a href="https://charts.youtube.com/" target="_blank" rel="noopener noreferrer"><b>▥ Official YouTube Charts</b><small>Explore music / Shorts charts</small></a>
+            <a href={`https://soundcloud.com/search/sounds?q=${encodeURIComponent(trendQuery)}`} target="_blank" rel="noopener noreferrer"><b>♫ SoundCloud search</b><small>Artist discovery; permissions vary</small></a>
+            <a href={`https://pixabay.com/music/search/${encodeURIComponent(trendQuery)}/`} target="_blank" rel="noopener noreferrer"><b>✧ Pixabay music</b><small>Review track licence before use</small></a>
+            <a href="https://ncs.io/usage-policy/2/types-of-content" target="_blank" rel="noopener noreferrer"><b>⚖ NCS usage policy</b><small>Pure music visualizers may be excluded</small></a>
+          </div>
+          <div className="panel-divider"/><h3>Copyright & remix rights</h3>
+          <p className="muted detail">A trending track is not automatically free to reuse. Confirm permission for both recordings and compositions. NCS standard creator policy specifically excludes simple music visualizers/reuploads. Mixing two songs does not avoid copyright.</p>
+          <button className="btn primary full" onClick={()=>setPanel('music')}>♫ Open Phonk Music Lab</button>
+        </>}
         {panel==='shorts'&&<>
           <div className="panel-heading"><h2>Shorts Lab</h2><small>9:16 · creator tools</small></div>
           <p className="muted detail">Suggests punchy parts of YOUR uploaded music using estimated beat intensity and drops. These are offline editing suggestions — NOT verified YouTube/TikTok trending statistics.</p>
