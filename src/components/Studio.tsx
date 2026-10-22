@@ -415,6 +415,7 @@ export default function Studio(){
     }finally{setConversionRunning(false);setConversionPercent(null);}
   };
   const doExport=async()=>{
+    if(previewTemplateRef.current){setWarning('Apply or cancel your template preview before export.');setPanel('templates');return;}
     if(exporting||conversionRunning||!canvas.current)return;
     const mime=getExportMime();
     if(!mime||!canvas.current.captureStream){setWarning('This browser does not support native canvas video export. Try desktop Chrome or Edge.');return;}
@@ -598,8 +599,22 @@ export default function Studio(){
     setSelected(id);setPanel('inspector');
     if(typeof window!=='undefined'&&window.matchMedia('(max-width:760px)').matches)setMobileSheet('tools');
   };
+  const switchPanel=(next:Panel)=>{
+    if(next!=='templates'&&previewTemplateRef.current){
+      previewTemplateRef.current=null;setPreviewTemplate(null);
+    }
+    setPanel(next);
+  };
   const openMobilePanel=(next:Panel)=>{
-    setPanel(next);setMobileSheet('tools');
+    switchPanel(next);setMobileSheet('tools');
+  };
+  const openExportSheet=()=>{
+    if(previewTemplateRef.current){
+      setMobileSheet('tools');setPanel('templates');
+      setWarning('Apply or cancel the preview before exporting.');
+      return;
+    }
+    setMobileSheet('export');
   };
   const previewChoice=(slug:string)=>{
     previewTemplateRef.current=slug;setPreviewTemplate(slug);
@@ -633,14 +648,14 @@ export default function Studio(){
     <audio ref={audio} preload="metadata" aria-hidden="true" />
     <header className="studio-header"><Link href="/" className="brand mini"><img src="/bass-bin-logo.png" alt=""/> <span>BASS BIN <em>MUSIC</em></span></Link>
       <div className="studio-file"><input aria-label="Project name" value={project.name} maxLength={70} onChange={e=>commit(p=>({...p,name:e.target.value}))}/><small>{saved}</small></div>
-      <div className="header-actions"><button className="btn primary tiny mobile-export-trigger" onClick={()=>setMobileSheet('export')}>Next →</button><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={historyStats.undo===0} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={historyStats.redo===0} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
+      <div className="header-actions"><button className="btn primary tiny mobile-export-trigger" onClick={openExportSheet}>Next →</button><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={historyStats.undo===0} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={historyStats.redo===0} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
     </header>
     {mobileSheet!=='closed'&&<button className="mobile-sheet-backdrop" aria-label="Close mobile tool panel" onClick={()=>setMobileSheet('closed')}/>}
      <main className="studio-columns">
-      <nav className="tool-rail" aria-label="Studio panels">{PANELS.map(p=><button key={p} aria-current={panel===p?'page':undefined} onClick={()=>setPanel(p)} className={panel===p?'active':''}><span>{PANEL_ICON[p]}</span>{p}</button>)}</nav>
+      <nav className="tool-rail" aria-label="Studio panels">{PANELS.map(p=><button key={p} aria-current={panel===p?'page':undefined} onClick={()=>switchPanel(p)} className={panel===p?'active':''}><span>{PANEL_ICON[p]}</span>{p}</button>)}</nav>
       <aside className={`studio-side ${mobileSheet==='tools'?'mobile-sheet-open':''}`} aria-label="Editor tool sheet">
        <div className="mobile-sheet-heading"><span className="sheet-grip"/><b>{panel==='fxlab'?'Phonk effects':panel==='templates'?'Templates':panel==='assets'?'Media library':panel==='music'?'Music Lab':panel==='inspector'?'Clip inspector':panel}</b><button type="button" aria-label="Close tool sheet" onClick={()=>setMobileSheet('closed')}>✕</button></div>
-       <nav className="mobile-sheet-panel-chooser" aria-label="All mobile editor tools">{PANELS.map(p=><button key={p} aria-current={panel===p?'page':undefined} onClick={()=>setPanel(p)}>{PANEL_ICON[p]} {p}</button>)}</nav>
+       <nav className="mobile-sheet-panel-chooser" aria-label="All mobile editor tools">{PANELS.map(p=><button key={p} aria-current={panel===p?'page':undefined} onClick={()=>switchPanel(p)}>{PANEL_ICON[p]} {p}</button>)}</nav>
         {panel==='assets'&&<><div className="panel-heading"><h2>Media library</h2><small>Local · private</small></div><p className="muted detail">Import your own media. Assets are stored in this browser, not uploaded to a server.</p><div className="upload-list">
           {(['audio','image','video'] as const).map(kind=><label className="upload-button" key={kind}><span>{kind==='audio'?'♫':kind==='image'?'▧':'▶'}</span><div><b>Import {kind}</b><small>{kind==='audio'?'MP3 · WAV · OGG':kind==='image'?'PNG · JPG · WebP':'MP4 · WebM'}</small></div><input type="file" hidden accept={`${kind}/*`} onChange={e=>{void upload(kind,e.target.files?.[0]);e.currentTarget.value='';}} /></label>)}
           <button className="btn outline full" onClick={async()=>{try{const r=await fetch('/demo-beat.wav');if(!r.ok)throw Error('Demo audio unavailable');const b=await r.blob();await upload('audio',new File([b],'Original Demo Beat.wav',{type:'audio/wav'}))}catch(e){setWarning(e instanceof Error?e.message:'Demo loading failed')}}}>▶ Try original demo beat</button>
@@ -882,7 +897,7 @@ export default function Studio(){
     </main>
     <nav className="mobile-tool-tabs" aria-label="Mobile studio tools">
         {([{p:'assets',name:'Media',glyph:'▣'},{p:'music',name:'Audio',glyph:'♫'},{p:'templates',name:'Templates',glyph:'❖'},{p:'fxlab',name:'Aura FX',glyph:'✦'},{p:'inspector',name:'Tools',glyph:'☷'}] as const).map(item=><button key={item.p} aria-current={mobileSheet==='tools'&&panel===item.p?'page':undefined} onClick={()=>mobileSheet==='tools'&&panel===item.p?setMobileSheet('closed'):openMobilePanel(item.p)}>{item.glyph}<span>{item.name}</span></button>)}
-        <button aria-current={mobileSheet==='export'?'page':undefined} onClick={()=>setMobileSheet(mobileSheet==='export'?'closed':'export')}>↓<span>Export</span></button>
+        <button aria-current={mobileSheet==='export'?'page':undefined} onClick={()=>mobileSheet==='export'?setMobileSheet('closed'):openExportSheet()}>↓<span>Export</span></button>
       </nav>
     <div className="studio-bottom"><span><i className="ok-dot"/> LOCAL-FIRST STUDIO</span><span>⌨ Space play · S split · B beat marker · ← → frame-step · Ctrl+Z undo</span><span>No subscription needed</span></div>
   </div>;
