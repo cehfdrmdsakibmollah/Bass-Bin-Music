@@ -1,3 +1,5 @@
+> **v0.9 — Reference-led Phonk Visualizer Rebuild:** We replaced the generic starting equalizer with **Dark Skull Bass** and added truly distinct **Midnight Drift** and **Memphis Tape** Canvas compositions. Each uses its own scene, actual audio-reactive waveform, original illustrated card, and accurate non-destructive preview/apply. Templates now open on **Signature Phonk** rather than the cluttered legacy presets; old projects remain compatible. [Research, limitations & implementation](docs/SIGNATURE-PHONK-REBUILD-V09.md).
+
 > **New in Shorts Lab v0.5:** music-aware 15/30/60 second hook suggestions (offline heuristic, not verified viral trends), optional apply to vertical 9:16 video, optional Auto Sync of **your imported** clips, full-song editing up to 10 minutes, manual source In/Out crop, audio split/join, loop and end-of-track replay. [Shorts Lab guide](docs/SHORTS-LAB-V05.md). All changes preserve Undo and your original media. Creator-licensed stock footage search is optional and external; no automatic third-party video harvesting.
 
 # BASS BIN MUSIC — Auto Director Pro v0.4
