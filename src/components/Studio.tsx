@@ -15,6 +15,7 @@ import {suggestHooks,applyShortHook,resizeComposition,joinNextAudio,restartPosit
 import {convertToInstagramMp4} from '@/lib/instagram-export';
 import PhonkMusicLab from '@/components/PhonkMusicLab';
 import {PHONK_FX_PRESETS,applyPhonkFx} from '@/lib/phonk-fx';
+import {AURA_PRESETS,previewTemplateSettings,commitTemplateChoice} from '@/lib/ultra-aura';
 
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director'|'shorts'|'music'|'fxlab'|'discover';
 const PANELS:Panel[]=['assets','music','shorts','templates','fxlab','beats','director','effects','discover','inspector'];
@@ -33,6 +34,10 @@ export default function Studio(){
   const history=useRef<{past:StudioProject[],future:StudioProject[]}>({past:[],future:[]});
   const [historyStats,setHistoryStats]=useState({undo:0,redo:0});
   const [panel,setPanel]=useState<Panel>('assets');
+  const [mobileSheet,setMobileSheet]=useState<'closed'|'tools'|'export'>('closed');
+  const [previewTemplate,setPreviewTemplate]=useState<string|null>(null);
+  const previewTemplateRef=useRef<string|null>(null);
+  const [templateCategory,setTemplateCategory]=useState('All');
   const [hookLength,setHookLength]=useState<15|30|60>(15);
   const [fxScope,setFxScope]=useState<'selected'|'all'>('all');
   const [trendQuery,setTrendQuery]=useState('brazilian phonk');
@@ -227,7 +232,7 @@ export default function Studio(){
       if(now-lastMediaSync.current>120){syncMedia(t,playRef.current.playing);lastMediaSync.current=now;}
       if(analyser.current)analyser.current.getByteFrequencyData(drawData.current);
       else drawData.current.fill(0);
-      const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,p.settings,p.tracks,drawData.current,t,media.current,p.beatSync);
+      const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,previewTemplateRef.current?previewTemplateSettings(p,previewTemplateRef.current):p.settings,p.tracks,drawData.current,t,media.current,p.beatSync);
       if(playRef.current.playing&&Math.abs(positionRef.current-t)>.09){positionRef.current=t;setPosition(t);}
       raf.current=requestAnimationFrame(render);
     };
@@ -589,6 +594,35 @@ export default function Studio(){
     };
     window.addEventListener('keydown',down);return()=>window.removeEventListener('keydown',down);
   });
+  const openMobilePanel=(next:Panel)=>{
+    setPanel(next);setMobileSheet('tools');
+  };
+  const previewChoice=(slug:string)=>{
+    previewTemplateRef.current=slug;setPreviewTemplate(slug);
+    setWarning('Previewing template. Choose Apply Template or Cancel Preview.');
+  };
+  const cancelChoice=()=>{
+    previewTemplateRef.current=null;setPreviewTemplate(null);
+    setWarning('Preview cancelled. Your saved project is unchanged.');
+  };
+  const applyChoice=()=>{
+    const slug=previewTemplateRef.current;if(!slug)return;
+    commit(p=>commitTemplateChoice(p,slug));
+    previewTemplateRef.current=null;setPreviewTemplate(null);
+    setWarning('Template applied: '+(templates.find(t=>t.slug===slug)?.name||AURA_PRESETS.find(t=>t.slug===slug)?.title||slug)+'. Undo is available.');
+    setMobileSheet('closed');
+  };
+  const createAuraReel=()=>{
+    const original=projectRef.current;
+    const music=original.tracks.find(t=>t.kind==='audio'&&t.assetId);
+    const len=Math.min(15,music?.sourceDuration||15);
+    const base=music?.assetId?applyShortHook(original,music.assetId,0,len,sourceMap):resizeComposition(original,15);
+    const preset=commitTemplateChoice(base,'ultra-aura');
+    commit(()=>({...preset,settings:{...preset.settings,aspect:'9:16',width:720,fps:30}}));
+    previewTemplateRef.current=null;setPreviewTemplate(null);
+    seek(0);setMobileSheet('closed');
+    setWarning('Ultra Aura 9:16 Reel ready. Add your own footage/music or export.');
+  };
   const range=(key:keyof Pick<Settings,'intensity'|'glow'|'shake'|'particles'|'zoom'|'vignette'|'grain'|'beatPulse'|'scanlines'|'chromatic'|'letterbox'>,title:string,max=100)=>
     <label className="slider-field" key={key}><span>{title}<strong>{project.settings[key]??0}%</strong></span><input type="range" min={0} max={max} value={project.settings[key]??0} onChange={e=>setSetting(key,Number(e.target.value))}/></label>;
   return <div className="studio-root">
