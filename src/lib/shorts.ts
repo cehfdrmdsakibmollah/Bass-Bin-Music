@@ -19,8 +19,8 @@ export function resizeComposition(project:StudioProject,duration:number):StudioP
   if(!Number.isFinite(duration))return project;
   const next=clamp(round(duration),1,MAX_COMPOSITION_SECONDS);
   const tracks=project.tracks.map(t=>{
-    const span=t.start===0&&Math.abs(t.duration-project.duration)<.11;
-    const start=Math.min(t.start,Math.max(0,next-.1));
+    const span=t.kind==='visualizer'||(t.start===0&&Math.abs(t.duration-project.duration)<.11);
+    const start=t.kind==='visualizer'?0:Math.min(t.start,Math.max(0,next-.1));
     const requested=(span&&['visualizer','effect','text'].includes(t.kind))?next:t.duration;
     return {...t,start,duration:round(clamp(requested,.1,next-start))};
   });
