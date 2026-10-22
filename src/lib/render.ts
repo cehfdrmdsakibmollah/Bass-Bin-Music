@@ -277,8 +277,10 @@ export function drawFrame(ctx:CanvasRenderingContext2D,settings:Settings,tracks:
     ctx.fillStyle='rgba(255,255,255,.16)';
     for(let i=0;i<n;i++)ctx.fillRect(rand(i+Math.floor(time*10)*17)*w,rand(i*3+Math.floor(time*10)*23)*h,1.2,1.2);
   }
-  ctx.font=`bold ${Math.max(10,Math.round(min*.019))}px Arial,sans-serif`;
-  ctx.textAlign='center';ctx.fillStyle='rgba(240,248,255,.52)';
-  ctx.fillText('BASS BIN MUSIC  •  CREATE YOUR FREQUENCY',w/2,h*.93,w*.88);
+  if(!isSignatureMode(settings.mode)){
+    ctx.font=`bold ${Math.max(10,Math.round(min*.019))}px Arial,sans-serif`;
+    ctx.textAlign='center';ctx.fillStyle='rgba(240,248,255,.52)';
+    ctx.fillText('BASS BIN MUSIC  •  CREATE YOUR FREQUENCY',w/2,h*.93,w*.88);
+  }
   ctx.restore();
 }
