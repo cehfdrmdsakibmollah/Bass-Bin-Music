@@ -1,3 +1,15 @@
+# BASS BIN MUSIC — CI and browser verification (22 October 2026)
+
+This section supersedes the older v0.3 test and repository-status claims below.
+
+- **GitHub repository:** https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music (main).
+- **Validation:** [GitHub Actions run 39801834569](https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music/actions/runs/39801834569) passed dependency installation, automated tests, TypeScript, ESLint and production Next.js build.
+- **Real-browser test:** [Browser Video Export run 39801835024](https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music/actions/runs/39801835024) passed using Playwright Chromium and a local Next.js production server. The UI loaded demo WAV audio, rendered a 2-second project, and downloaded `bass-bin-1792681727605.webm` (542,039 bytes).
+- **Test coverage limits:** This proves that Chromium generated and downloaded a video file in CI; audio fidelity, A/V sync, complete playback decoding, mobile browsers, and third-party codecs are not yet verified. Several software-canvas visual tests are skipped in CI when its optional canvas dependency is absent.
+- **Vercel deployment:** **NOT deployed**. Vercel rejected project creation for the `md-sakib-mollahs-projects` team with HTTP 403: the connected app lacks access to that team. Reauthorize the Vercel connection with that team explicitly before retrying. No live URL can be provided yet.
+
+## Earlier historical report
+
 # BASS BIN MUSIC v0.3 — verification report (22 October 2026)
 
 **Overall:** Advanced, local-first source package. Not a production-verified website; no live deployment or verified browser video exports are claimed.
