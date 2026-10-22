@@ -14,6 +14,7 @@ import type {StudioProject,Track,TrackKind,Settings,Motion} from '@/lib/types';
 
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director';
 const icon:Record<TrackKind,string>={audio:'♫',image:'▣',video:'▶',text:'T',visualizer:'▥',effect:'✦'};
+function setVideoPlaybackRate(element:HTMLVideoElement,rate:number){element.playbackRate=rate;}
 function parseUpload(kind:'audio'|'image'|'video',file:File):Track{
   return {id:`track-${crypto.randomUUID()}`,kind,label:file.name.slice(0,35),start:0,duration:20,hidden:false,muted:false,assetId:`asset-${crypto.randomUUID()}`};
 }
@@ -21,6 +22,7 @@ export default function Studio(){
   const [project,setProject]=useState<StudioProject>(()=>createProject());
   const projectRef=useRef(project);
   const history=useRef<{past:StudioProject[],future:StudioProject[]}>({past:[],future:[]});
+  const [historyStats,setHistoryStats]=useState({undo:0,redo:0});
   const [panel,setPanel]=useState<Panel>('assets');
   const [insights,setInsights]=useState<AudioInsights|null>(null);
   const [snapEnabled,setSnapEnabled]=useState(true);
@@ -41,6 +43,7 @@ export default function Studio(){
   const [playing,setPlaying]=useState(false);
   const [position,setPosition]=useState(0);
   const playRef=useRef({playing:false,base:0,at:0});
+  const positionRef=useRef(0);
   const [saved,setSaved]=useState('Stored locally');
   const [warning,setWarning]=useState('');
   const [exporting,setExporting]=useState(false);
@@ -84,12 +87,12 @@ export default function Studio(){
     history.current.past.push(old);
     if(history.current.past.length>50)history.current.past.shift();
     history.current.future=[];
-    projectRef.current=next;setProject(next);setSaved('Unsaved changes');
+    projectRef.current=next;setProject(next);setHistoryStats({undo:history.current.past.length,redo:0});setSaved('Unsaved changes');
   },[]);
   const jump=useCallback((redo=false)=>{
     const group=history.current,from=redo?group.future:group.past,to=redo?group.past:group.future;
     const value=from.pop();if(!value)return;
-    to.push(projectRef.current);projectRef.current=value;setProject(value);
+    to.push(projectRef.current);projectRef.current=value;setProject(value);setHistoryStats({undo:group.past.length,redo:group.future.length});
   },[]);
   const attachAsset=useCallback(async(id:string):Promise<BeatMap|null>=>{
     const entry=await loadAsset(id);
@@ -124,8 +127,8 @@ export default function Studio(){
     return detected;
   },[commit]);
   useEffect(()=>{
-    setBrowserExport(typeof HTMLCanvasElement!=='undefined'&&!!HTMLCanvasElement.prototype.captureStream&&!!getExportMime());
     let live=true;
+    const capabilityTimer=setTimeout(()=>{if(live)setBrowserExport(typeof HTMLCanvasElement!=='undefined'&&!!HTMLCanvasElement.prototype.captureStream&&!!getExportMime());},0);
     const restore=async()=>{
       try{
         const params=new URLSearchParams(location.search);
@@ -137,7 +140,7 @@ export default function Studio(){
       finally{if(live)setReady(true)}
     };
     void restore();
-    return()=>{live=false;cancelAnimationFrame(raf.current);stopExport.current?.();audioCtx.current?.close();for(const u of objectUrls.current.values())URL.revokeObjectURL(u)};
+    return()=>{live=false;clearTimeout(capabilityTimer);cancelAnimationFrame(raf.current);stopExport.current?.();audioCtx.current?.close();for(const u of objectUrls.current.values())URL.revokeObjectURL(u)};
   },[attachAsset]);
   useEffect(()=>{
     if(!ready)return;
@@ -161,7 +164,7 @@ export default function Studio(){
     for(const [assetId,m] of media.current){if(!(m instanceof HTMLVideoElement))continue;
       const clip=p.tracks.find(x=>x.kind==='video'&&x.assetId===assetId&&!x.hidden&&t>=x.start&&t<x.start+x.duration);
       if(clip){const rate=clip.playbackRate||1,expected=(t-clip.start)*rate+(clip.clipStart||0);
-        if(Math.abs(m.playbackRate-rate)>.001)m.playbackRate=rate;
+        if(Math.abs(m.playbackRate-rate)>.001)setVideoPlaybackRate(m,rate);
         if(Number.isFinite(m.duration)&&expected>=m.duration){m.pause();continue;}
         if(Math.abs((m.currentTime||0)-expected)>.23){try{m.currentTime=expected;}catch{}}
         if(shouldPlay&&m.paused)void m.play().catch(()=>{});
@@ -188,7 +191,6 @@ export default function Studio(){
     };
     raf.current=requestAnimationFrame(render);return()=>cancelAnimationFrame(raf.current);
   },[mediaReady]);
-  const positionRef=useRef(0);
   const seek=(value:number)=>{
     const t=clampTime(value,projectRef.current.duration);playRef.current.base=t;playRef.current.at=performance.now();positionRef.current=t;setPosition(t);
     syncMedia(t,playRef.current.playing);
@@ -229,19 +231,6 @@ export default function Studio(){
       playRef.current={playing:true,base:positionRef.current,at:performance.now()};syncMedia(positionRef.current,true);setPlaying(true);
     }catch(e){setWarning(`Playback was blocked: ${e instanceof Error?e.message:'unsupported format'}`)}
   };
-  useEffect(()=>{
-    const down=(e:KeyboardEvent)=>{
-      const target=e.target as HTMLElement;
-      if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(target.tagName)||target.isContentEditable)return;
-      if(e.code==='Space'){e.preventDefault();void togglePlay();}
-      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();jump(e.shiftKey);}
-      if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();seek(positionRef.current+(e.key==='ArrowLeft'?-1:1)*(e.shiftKey?1:1/projectRef.current.settings.fps));}
-      if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();splitAtPlayhead();}
-      if(e.key.toLowerCase()==='b'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();addBeatHere();}
-      if(e.key==='Delete'&&active&&active.kind!=='audio'){e.preventDefault();remove();}
-    };
-    window.addEventListener('keydown',down);return()=>window.removeEventListener('keydown',down);
-  });
   const upload=async(kind:'audio'|'image'|'video',file:File|null|undefined)=>{
     if(!file)return;
     try{
@@ -478,13 +467,26 @@ export default function Studio(){
     audio.current?.pause();audio.current?.removeAttribute('src');audio.current?.load();
     const empty=createProject(Date.now());commit(()=>empty);setSelected('visualizer');seek(0);
   };
+  useEffect(()=>{
+    const down=(e:KeyboardEvent)=>{
+      const target=e.target as HTMLElement;
+      if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(target.tagName)||target.isContentEditable)return;
+      if(e.code==='Space'){e.preventDefault();void togglePlay();}
+      if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();jump(e.shiftKey);}
+      if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();seek(positionRef.current+(e.key==='ArrowLeft'?-1:1)*(e.shiftKey?1:1/projectRef.current.settings.fps));}
+      if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();splitAtPlayhead();}
+      if(e.key.toLowerCase()==='b'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();addBeatHere();}
+      if(e.key==='Delete'&&active&&active.kind!=='audio'){e.preventDefault();remove();}
+    };
+    window.addEventListener('keydown',down);return()=>window.removeEventListener('keydown',down);
+  });
   const range=(key:keyof Pick<Settings,'intensity'|'glow'|'shake'|'particles'|'zoom'|'vignette'|'grain'|'beatPulse'|'scanlines'|'chromatic'|'letterbox'>,title:string,max=100)=>
     <label className="slider-field" key={key}><span>{title}<strong>{project.settings[key]??0}%</strong></span><input type="range" min={0} max={max} value={project.settings[key]??0} onChange={e=>setSetting(key,Number(e.target.value))}/></label>;
   return <div className="studio-root">
     <audio ref={audio} preload="metadata" aria-hidden="true" />
     <header className="studio-header"><Link href="/" className="brand mini"><img src="/bass-bin-logo.png" alt=""/> <span>BASS BIN <em>MUSIC</em></span></Link>
       <div className="studio-file"><input aria-label="Project name" value={project.name} maxLength={70} onChange={e=>commit(p=>({...p,name:e.target.value}))}/><small>{saved}</small></div>
-      <div className="header-actions"><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={!history.current.past.length} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={!history.current.future.length} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
+      <div className="header-actions"><button className="btn ghost tiny" onClick={exportJson} title="Export editable project settings JSON">Save JSON</button><button className="btn ghost tiny" onClick={()=>jump()} disabled={historyStats.undo===0} title="Undo (Ctrl+Z)">↶</button><button className="btn ghost tiny" onClick={()=>jump(true)} disabled={historyStats.redo===0} title="Redo">↷</button><button className="btn primary tiny" onClick={()=>void doExport()} disabled={exporting||!browserExport}>{exporting?'Rendering…':'↓ Export Video'}</button></div>
     </header>
     <main className="studio-columns">
       <nav className="tool-rail" aria-label="Studio panels">{(['assets','templates','beats','director','effects','inspector'] as Panel[]).map(p=><button key={p} aria-current={panel===p?'page':undefined} onClick={()=>setPanel(p)} className={panel===p?'active':''}><span>{p==='assets'?'▣':p==='templates'?'❖':p==='effects'?'✴':p==='beats'?'♩':p==='director'?'⚡':'☷'}</span>{p}</button>)}</nav>
