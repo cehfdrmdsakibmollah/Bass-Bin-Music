@@ -2,6 +2,7 @@ import {test,expect} from '@playwright/test';
 
 test('preview restarts at end and loop can be enabled',async({page})=>{
   await page.goto('/studio');
+  await page.getByRole('navigation',{name:'Studio panels'}).getByRole('button',{name:/inspector/i}).click();
   const duration=page.getByRole('spinbutton',{name:'Duration (seconds)'}).last();
   await duration.fill('2');await duration.press('Tab');
   await expect(duration).toHaveValue('2');
