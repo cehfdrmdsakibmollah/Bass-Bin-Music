@@ -159,6 +159,33 @@ export function drawFrame(ctx:CanvasRenderingContext2D,settings:Settings,tracks:
         }
         break;
       }
+      case 'aura':{
+        // Original concentric aura spectrum; same timestamps render identically in preview and export.
+        const cx=w*.5,cy=h*.49;
+        const bassReact=Math.min(1,energy+beatPulse*.6);
+        for(let j=5;j>=0;j--){
+          const radius=min*(.145+j*.066)*(1+bassReact*.12);
+          ctx.save();ctx.globalAlpha=.13+(5-j)*.085;
+          ctx.beginPath();
+          for(let i=0;i<=160;i++){
+            const a=i/160*Math.PI*2;
+            const spectral=amp(Math.floor(i/160*count));
+            const r=radius+min*.04*spectral*Math.sin(a*3+time*.55+j*.64)+Math.sin(a*7+time*.8+j)*min*.012;
+            const x=cx+Math.cos(a)*r,y=cy+Math.sin(a)*r;
+            if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          ctx.closePath();ctx.lineWidth=Math.max(1.5,min*(.003+j*.0005));
+          ctx.strokeStyle=j%2?settings.secondary:settings.primary;
+          ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=min*.025;ctx.stroke();ctx.restore();
+        }
+        ctx.save();
+        ctx.beginPath();ctx.arc(cx,cy,min*(.11+bassReact*.01),0,Math.PI*2);
+        ctx.fillStyle='rgba(3,6,22,.86)';ctx.fill();
+        ctx.lineWidth=Math.max(2,min*.006);
+        ctx.strokeStyle=settings.primary;ctx.shadowColor=settings.secondary;ctx.shadowBlur=min*.025;ctx.stroke();
+        ctx.restore();
+        break;
+      }
       case 'wave':{
         for(let j=0;j<3;j++){
           ctx.beginPath();ctx.lineWidth=Math.max(3,min*.004);ctx.strokeStyle=j===1?settings.secondary:settings.primary;
