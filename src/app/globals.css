@@ -60,3 +60,16 @@
 .arrangement-card.energy-drop{border-color:#da4d94;background:linear-gradient(110deg,#29112d,#0d1828)}
 .arrangement-card.energy-breakdown{border-color:#3a5a70}.arrangement-card.energy-build{border-color:#8a5ad7}
 @media(max-width:760px){.arrangement-card{min-height:48px}.player-controls{flex-wrap:wrap;gap:.45rem}.player-controls .transport-slider{min-width:120px;flex:1}}
+
+
+/* v0.5 Shorts Lab — keeps suggestion controls readable on narrow studio panels. */
+.shorts-suggestions{display:grid;gap:10px;margin:12px 0 18px}
+.shorts-suggestion{padding:12px;border:1px solid rgba(91,228,239,.24);border-radius:12px;background:linear-gradient(120deg,rgba(16,230,210,.075),rgba(181,83,240,.08))}
+.shorts-suggestion strong,.shorts-suggestion small{display:block}
+.shorts-suggestion strong{font-size:13px;color:#eafafe}
+.shorts-suggestion small{font-size:11px;color:#a2b9d5;line-height:1.55;margin:5px 0 9px}
+.shorts-suggestion .beat-action-pair{gap:7px}
+.shorts-suggestion .btn{min-width:0;flex:1;white-space:normal}
+.shorts-stock{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.shorts-stock a{font-size:11px;text-align:center;line-height:1.45;text-decoration:none;word-break:break-word;padding:10px 6px}
+@media(max-width:800px){.shorts-stock{grid-template-columns:1fr 1fr}.shorts-suggestion{padding:9px}.shorts-suggestion .btn{font-size:11px;padding:9px 4px}}
