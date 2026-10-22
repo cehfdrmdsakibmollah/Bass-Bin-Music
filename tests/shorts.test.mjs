@@ -18,6 +18,14 @@ test('long imported song expands timeline and background beyond former 20s cap',
  assert.ok(normalizeProject(project));
  assert.equal(resizeComposition(project,999).duration,600);
 });
+test('resizing an old studio project repairs a 0.1 second spectrum layer',()=>{
+ const old=createProject(99);
+ const broken={...old,tracks:old.tracks.map(t=>t.id==='visualizer'?{...t,duration:.1}:t)};
+ const repaired=resizeComposition(broken,135);
+ assert.equal(repaired.tracks.find(t=>t.id==='visualizer').start,0);
+ assert.equal(repaired.tracks.find(t=>t.id==='visualizer').duration,135);
+ assert.ok(normalizeProject(repaired));
+});
 test('suggested hook windows are source-bounded, ranked and non-overlapping',()=>{
  const p=makeSong();
  const before=JSON.stringify(p);
