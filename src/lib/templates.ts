@@ -1,6 +1,10 @@
 import type { StudioProject, Settings } from './types';
 export type Template = { slug: string; name: string; category: string; description: string; colors: [string, string]; mode: Settings['mode']; energy: number; tags: string[] };
 export const templates: Template[] = [
+  {slug:'signature-skull',name:'Dark Skull Bass',category:'Signature Phonk',description:'Custom dark skull, crimson bass-reactive spikes and industrial atmosphere. Creator artwork optional.',colors:['#fe3e68','#9958fb'],mode:'phonk-skull',energy:93,tags:['signature','skull','memphis','hard']},
+  {slug:'signature-drift',name:'Midnight Drift',category:'Signature Phonk',description:'Wet midnight roadway, tail lights and off-center neon spectrum. Add your own drift footage.',colors:['#ff4c78','#5598fa'],mode:'phonk-drift',energy:82,tags:['signature','car','jdm','drift']},
+  {slug:'signature-tape',name:'Memphis Tape',category:'Signature Phonk',description:'Original cassette deck, moving reels and wide real-audio waveform.',colors:['#e15748','#efb16c'],mode:'phonk-tape',energy:86,tags:['signature','memphis','cassette','tape']},
+
   { slug:'dark-drift', name:'Dark Drift Phonk', category:'Drift', description:'Low-key street energy with red neon and heavyweight bass bars.', colors:['#ff315c','#af48ff'], mode:'bars', energy:85, tags:['cars','drift','dark'] },
   { slug:'brazilian-phonk', name:'Brazilian Phonk', category:'Phonk', description:'High-energy cyan and green motion for Brazilian phonk edits.', colors:['#00f4d1','#a6ff47'], mode:'circle', energy:95, tags:['brazilian','funk','bass'] },
   { slug:'jdm-night-drive', name:'JDM Night Drive', category:'Automotive', description:'Midnight blue highways, magenta waveform and Tokyo-inspired night visuals.', colors:['#36e8ff','#e448ff'], mode:'wave', energy:76, tags:['jdm','night','car'] },
@@ -25,16 +29,16 @@ export const templates: Template[] = [
   { slug:'digital-voltage', name:'Digital Voltage', category:'Bass', description:'Electric neon orange energy spirals for punchy drops.', colors:['#ff9354','#ff3dc8'], mode:'spiral', energy:99, tags:['voltage','bass','drop'] }
 ];
 export const defaultSettings: Settings = {
-  aspect:'16:9', fps:30, width:1280, mode:'bars', primary:'#22e9ff', secondary:'#fb4ec9',
-  intensity:75, glow:72, shake:12, particles:38, zoom:6, title:'FEEL THE FREQUENCY', background:'#080915',
-  backdrop:'grid',vignette:42,grain:10,beatPulse:15,bitrate:5,eq:{bass:0,mid:0,treble:0,compressor:false}
+  aspect:'16:9', fps:30, width:1280, mode:'phonk-skull', primary:'#fe3e68', secondary:'#9958fb',
+  intensity:88, glow:42, shake:9, particles:10, zoom:4, title:'BASS BIN MUSIC', background:'#050409',
+  backdrop:'solid',vignette:32,grain:8,beatPulse:22,bitrate:5,eq:{bass:0,mid:0,treble:0,compressor:false}
 };
 export function createProject(seed = Date.now()): StudioProject {
   return {
-    schemaVersion:1, id:`bbm-${seed}`, name:'Untitled Phonk Project', template:'neon-city', createdAt:seed,updatedAt:seed,duration:20,
+    schemaVersion:1, id:`bbm-${seed}`, name:'Untitled Phonk Project', template:'signature-skull', createdAt:seed,updatedAt:seed,duration:20,
     settings:{...defaultSettings}, tracks:[
       {id:'visualizer',kind:'visualizer',label:'Audio Spectrum',start:0,duration:20,hidden:false,muted:false},
-      {id:'title',kind:'text',label:'Title overlay',start:0,duration:20,hidden:false,muted:false,text:'FEEL THE FREQUENCY',fontSize:.063,fontColor:'#ffffff',fontFamily:'sans',transition:'fade'},
+      {id:'title',kind:'text',label:'Editable artist title',start:0,duration:20,hidden:false,muted:false,text:'BASS BIN MUSIC',fontSize:.035,fontColor:'#e3dfe8',fontFamily:'mono',motion:{x:50,y:88,scale:1,rotation:0,opacity:1},transition:'fade'},
       {id:'fx',kind:'effect',label:'Glow effects',start:0,duration:20,hidden:false,muted:false}
     ]
   };
@@ -42,5 +46,7 @@ export function createProject(seed = Date.now()): StudioProject {
 export function applyTemplate(project:StudioProject,slug:string):StudioProject {
   const template=templates.find(t=>t.slug===slug);
   if(!template) return project;
-  return {...project,template:slug,updatedAt:Date.now(),settings:{...project.settings,primary:template.colors[0],secondary:template.colors[1],mode:template.mode,intensity:template.energy}};
+  const signature=template.category==='Signature Phonk';
+  const tracks=signature?project.tracks.map(t=>t.kind==='text'&&t.id==='title'?{...t,label:'Editable artist title',text:slug==='signature-skull'?'BASS BIN MUSIC':slug==='signature-drift'?'NIGHT DRIVE':'MEMPHIS TAPE',fontSize:.033,fontColor:'#e3dfe8',fontFamily:'mono' as const,motion:{x:50,y:88,scale:1,rotation:0,opacity:1}}:t):project.tracks;
+  return {...project,template:slug,updatedAt:Date.now(),tracks,settings:{...project.settings,primary:template.colors[0],secondary:template.colors[1],mode:template.mode,intensity:template.energy,...(signature?{background:'#050409',backdrop:'solid' as const,glow:47,shake:9,beatPulse:28,grain:12,particles:12,vignette:30}:{})}};
 }
