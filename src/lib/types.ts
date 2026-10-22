@@ -1,7 +1,7 @@
 import type {BeatSync} from './beat-sync.ts';
 export type TrackKind = 'audio' | 'image' | 'video' | 'text' | 'visualizer' | 'effect';
 export type Aspect = '16:9' | '9:16' | '1:1';
-export type VisualMode = 'bars' | 'circle' | 'wave' | 'particles' | 'mirror' | 'spiral' | 'rings' | 'avee' | 'ncs' | 'catpulse';
+export type VisualMode = 'bars' | 'circle' | 'wave' | 'particles' | 'mirror' | 'spiral' | 'rings' | 'avee' | 'ncs' | 'catpulse' | 'aura';
 export type Motion = { x:number; y:number; scale:number; rotation:number; opacity:number };
 export type MotionKeyframe = Partial<Motion> & {at:number};
 export type Transition = 'none' | 'fade' | 'slide' | 'zoom' | 'whip' | 'glitch' | 'spin';
