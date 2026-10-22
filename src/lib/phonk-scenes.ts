@@ -176,7 +176,7 @@ export function drawPhonkHero(ctx:CanvasRenderingContext2D,mode:SignatureMode,se
    ring(ctx,x,y,r*1.02,audio,settings,kick,beatDrop,'hard');
    ctx.strokeStyle=a;ctx.globalAlpha=.45;ctx.lineWidth=Math.max(1,min*.002);
    pathLine(ctx,[[w*.08,y],[x-r*1.55,y]]);pathLine(ctx,[[x+r*1.55,y],[w*.92,y]]);
-   textSmall(ctx,'M E M P H I S   /   P H O N K',w*.5,h*(portrait?.76:.85),min,'#d1d9e5');
+   textSmall(ctx,'M E M P H I S   /   P H O N K',w*.5,h*.13,min,'#d1d9e5');
  }else if(mode==='phonk-drift'){
    // Off-center signal in widescreen, lifted above the car in 9:16.
    const x=portrait?w*.5:w*.74,y=portrait?h*.35:h*.39,r=min*(portrait?.20:.185);
@@ -222,7 +222,7 @@ export function drawPhonkHero(ctx:CanvasRenderingContext2D,mode:SignatureMode,se
     ctx.fillStyle=i%4===0?b:a;ctx.globalAlpha=.34+level*.58;
     ctx.fillRect(xx,baseY-hh/2,Math.max(2,step*.56),hh);
    }ctx.globalAlpha=1;
-   textSmall(ctx,'M E M P H I S   T A P E   /   B A S S   B I N',w*.5,h*(portrait?.76:.85),min,'#e6ccc2');
+   textSmall(ctx,'M E M P H I S   T A P E   /   B A S S   B I N',w*.5,h*.12,min,'#e6ccc2');
  }
  ctx.restore();
 }
