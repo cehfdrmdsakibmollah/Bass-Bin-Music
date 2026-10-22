@@ -34,7 +34,7 @@ test('apply/cancel behavior is explicit and preserves all existing tracks',()=>{
   assert.deepEqual(updated.tracks,original.tracks);
   assert.ok(normalizeProject(updated));
   assert.equal(commitTemplateChoice(original,'not-real'),original);
-  assert.equal(original.settings.mode,'bars');
+  assert.equal(original.settings.mode,'phonk-skull');
 });
 test('legacy template apply remains backwards compatible and saveable',()=>{
   const p=createProject(31);
