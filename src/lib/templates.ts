@@ -38,7 +38,7 @@ export function createProject(seed = Date.now()): StudioProject {
     schemaVersion:1, id:`bbm-${seed}`, name:'Untitled Phonk Project', template:'signature-skull', createdAt:seed,updatedAt:seed,duration:20,
     settings:{...defaultSettings}, tracks:[
       {id:'visualizer',kind:'visualizer',label:'Audio Spectrum',start:0,duration:20,hidden:false,muted:false},
-      {id:'title',kind:'text',label:'Editable artist title',start:0,duration:20,hidden:false,muted:false,text:'BASS BIN MUSIC',fontSize:.035,fontColor:'#e3dfe8',fontFamily:'mono',motion:{x:50,y:88,scale:1,rotation:0,opacity:1},transition:'fade'},
+      {id:'title',kind:'text',label:'Editable artist title',start:0,duration:20,hidden:false,muted:false,text:'BASS BIN MUSIC',fontSize:.055,fontColor:'#e3dfe8',fontFamily:'mono',motion:{x:50,y:88,scale:1,rotation:0,opacity:1},transition:'fade'},
       {id:'fx',kind:'effect',label:'Glow effects',start:0,duration:20,hidden:false,muted:false}
     ]
   };
@@ -47,6 +47,6 @@ export function applyTemplate(project:StudioProject,slug:string):StudioProject {
   const template=templates.find(t=>t.slug===slug);
   if(!template) return project;
   const signature=template.category==='Signature Phonk';
-  const tracks=signature?project.tracks.map(t=>t.kind==='text'&&t.id==='title'?{...t,label:'Editable artist title',text:slug==='signature-skull'?'BASS BIN MUSIC':slug==='signature-drift'?'NIGHT DRIVE':'MEMPHIS TAPE',fontSize:.033,fontColor:'#e3dfe8',fontFamily:'mono' as const,motion:{x:50,y:88,scale:1,rotation:0,opacity:1}}:t):project.tracks;
+  const tracks=signature?project.tracks.map(t=>t.kind==='text'&&t.id==='title'?{...t,label:'Editable artist title',text:slug==='signature-skull'?'BASS BIN MUSIC':slug==='signature-drift'?'NIGHT DRIVE':'MEMPHIS TAPE',fontSize:.055,fontColor:'#e3dfe8',fontFamily:'mono' as const,motion:{x:50,y:88,scale:1,rotation:0,opacity:1}}:t):project.tracks;
   return {...project,template:slug,updatedAt:Date.now(),tracks,settings:{...project.settings,primary:template.colors[0],secondary:template.colors[1],mode:template.mode,intensity:template.energy,...(signature?{background:'#050409',backdrop:'solid' as const,glow:47,shake:9,beatPulse:28,grain:12,particles:12,vignette:30}:{})}};
 }
