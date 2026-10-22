@@ -10,7 +10,7 @@ test('mobile studio has usable six-button bar, fixed drawers, Aura preview + con
   await expect(page.locator('.studio-side')).toHaveCSS('visibility','hidden');
   await mobile.getByRole('button',{name:'Templates'}).click();
   await expect(page.locator('.studio-side')).toHaveCSS('visibility','visible');
-  await expect(page.getByRole('heading',{name:'Ultra Aura & Phonk Templates'})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Phonk Video Maker'})).toBeVisible();
   await page.getByRole('group',{name:'Template categories'}).getByRole('button',{name:'Ultra Aura'}).click();
   const aura=page.locator('.mobile-template-grid .mini-template').filter({hasText:'Ultra Aura'}).first();
   await aura.click();
