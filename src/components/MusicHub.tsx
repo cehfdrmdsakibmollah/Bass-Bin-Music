@@ -22,7 +22,7 @@ function embed(url:string):string|null{
 export default function MusicHub(){
   const [links,setLinks]=useState<RecordLink[]>([]);
   const [title,setTitle]=useState('');const [url,setUrl]=useState('');const [query,setQuery]=useState('');const [error,setError]=useState('');
-  useEffect(()=>{try{const value=JSON.parse(localStorage.getItem(STORAGE)||'[]') as RecordLink[];if(Array.isArray(value))setLinks(value.filter(x=>{try{return !!x&&typeof x.url==='string'&&typeof x.title==='string'&&x.title.length<=100&&!!source(x.url)}catch{return false}}).slice(0,100))}catch{/* bad local entries ignored */}},[]);
+  useEffect(()=>{const timer=setTimeout(()=>{try{const value=JSON.parse(localStorage.getItem(STORAGE)||'[]') as RecordLink[];if(Array.isArray(value))setLinks(value.filter(x=>{try{return !!x&&typeof x.url==='string'&&typeof x.title==='string'&&x.title.length<=100&&!!source(x.url)}catch{return false}}).slice(0,100))}catch{/* bad local entries ignored */}},0);return()=>clearTimeout(timer)},[]);
   const update=(items:RecordLink[])=>{setLinks(items);try{localStorage.setItem(STORAGE,JSON.stringify(items))}catch{setError('Local storage is unavailable.')}};
   const add=()=>{try{if(!title.trim()||title.length>100)throw Error('Add a title (up to 100 characters).');if(links.length>=100)throw Error('Link limit reached (100).');const platform=source(url);update([{id:crypto.randomUUID(),title:title.trim(),url,platform},...links]);setUrl('');setTitle('');setError('');}catch(e){setError(e instanceof Error?e.message:'Invalid URL')}};
   const filtered=links.filter(x=>`${x.title} ${x.platform}`.toLowerCase().includes(query.toLowerCase()));
