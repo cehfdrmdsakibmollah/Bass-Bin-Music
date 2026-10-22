@@ -11,7 +11,7 @@ test('default template contains versioned editable tracks',()=>{
   assert.equal(project.settings.mode,'bars');
 });
 test('all template slugs are unique and each has editable settings',()=>{
-  assert.equal(templates.length,16);
+  assert.ok(templates.length>=22);
   assert.equal(new Set(templates.map(t=>t.slug)).size,templates.length);
   for(const t of templates){assert.equal(applyTemplate(createProject(),t.slug).settings.mode,t.mode);}
 });
