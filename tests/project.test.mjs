@@ -8,7 +8,7 @@ test('default template contains versioned editable tracks',()=>{
   const project=createProject(123);
   assert.equal(project.id,'bbm-123');assert.equal(project.schemaVersion,1);
   assert.equal(project.tracks.length,3);
-  assert.equal(project.settings.mode,'bars');
+  assert.equal(project.settings.mode,'phonk-skull');
 });
 test('all template slugs are unique and each has editable settings',()=>{
   assert.ok(templates.length>=22);
