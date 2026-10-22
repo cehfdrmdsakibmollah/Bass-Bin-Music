@@ -12,6 +12,7 @@ import {loadAsset,loadProject,saveAsset,saveProject} from '@/lib/storage';
 import {analyzeArrangement,autoDirector,generateMotion,quantizeBeatMap,quantizeTimeline,rippleMove,captionsSRT,editDecisionCSV,audioGainAt,type DirectorOptions,type MotionPreset} from '@/lib/director';
 import type {StudioProject,Track,TrackKind,Settings,Motion} from '@/lib/types';
 import {suggestHooks,applyShortHook,resizeComposition,joinNextAudio,restartPosition,MAX_COMPOSITION_SECONDS} from '@/lib/shorts';
+import {convertToInstagramMp4} from '@/lib/instagram-export';
 
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director'|'shorts';
 const icon:Record<TrackKind,string>={audio:'♫',image:'▣',video:'▶',text:'T',visualizer:'▥',effect:'✦'};
@@ -60,6 +61,9 @@ export default function Studio(){
   const [exporting,setExporting]=useState(false);
   const [exportPercent,setExportPercent]=useState(0);
   const [codec,setCodec]=useState('');
+  const [exportPreset,setExportPreset]=useState<'instagram'|'webm'>('instagram');
+  const [conversionPercent,setConversionPercent]=useState<number|null>(null);
+  const [conversionRunning,setConversionRunning]=useState(false);
   const recorder=useRef<MediaRecorder|null>(null);
   const stopExport=useRef<(()=>void)|null>(null);
   const cancelRequested=useRef(false);
@@ -386,8 +390,21 @@ export default function Studio(){
       setWarning('Project metadata imported. Original media must exist in this browser to be restored.');
     }catch(e){setWarning(e instanceof Error?e.message:'Import failed')}
   };
+  const convertExistingVideo=async(file:File|null|undefined)=>{
+    if(!file||conversionRunning||exporting)return;
+    setConversionRunning(true);setConversionPercent(0);
+    setWarning('Encoding Instagram MP4 on this device. Keep the page open.');
+    try{
+      const converted=await convertToInstagramMp4(file,setConversionPercent);
+      const filename=(file.name.replace(/\.(webm|mp4|mov)$/i,'')||'bass-bin-video')+'-instagram.mp4';
+      download(converted,filename);
+      setWarning('Instagram MP4 downloaded (H.264 video / AAC audio).');
+    }catch(e){
+      setWarning('MP4 conversion failed: '+(e instanceof Error?e.message:'Unsupported browser codec')+'. Try desktop Chrome or Edge.');
+    }finally{setConversionRunning(false);setConversionPercent(null);}
+  };
   const doExport=async()=>{
-    if(exporting||!canvas.current)return;
+    if(exporting||conversionRunning||!canvas.current)return;
     const mime=getExportMime();
     if(!mime||!canvas.current.captureStream){setWarning('This browser does not support native canvas video export. Try desktop Chrome or Edge.');return;}
     cancelRequested.current=false;setWarning('');setExportPercent(0);
@@ -403,15 +420,30 @@ export default function Studio(){
       const start=clockNow();
       rec.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data)};
       rec.onerror=()=>setWarning('Browser recording failed. Try a shorter duration or lower resolution.');
-      rec.onstop=()=>{
+      rec.onstop=async()=>{
         if(timer)clearInterval(timer);
         stream?.getVideoTracks().forEach(t=>t.stop());
-        audio.current?.pause();playRef.current.playing=false;setPlaying(false);setExporting(false);stopExport.current=null;
-        if(cancelRequested.current){setWarning('Export cancelled.');return;}
-        if(!chunks.length){setWarning('No video frames were produced. Please try another browser.');return;}
-        const ext=mime.includes('mp4')?'mp4':'webm';
-        download(new Blob(chunks,{type:mime}),`bass-bin-${Date.now()}.${ext}`);
-        setWarning(`Export saved to your device as ${ext.toUpperCase()}.`);
+        audio.current?.pause();playRef.current.playing=false;setPlaying(false);stopExport.current=null;
+        try{
+          if(cancelRequested.current){setWarning('Export cancelled.');return;}
+          if(!chunks.length){setWarning('No video frames were produced. Please try another browser.');return;}
+          const raw=new Blob(chunks,{type:mime});
+          const ext=mime.includes('mp4')?'mp4':'webm';
+          if(exportPreset==='webm'){
+            download(raw,`bass-bin-${Date.now()}.${ext}`);
+            setWarning(`Export saved to your device as ${ext.toUpperCase()}.`);return;
+          }
+          setConversionRunning(true);setConversionPercent(0);
+          setWarning('Rendering finished. Encoding Instagram MP4 locally; keep this page open.');
+          try{
+            const mp4=await convertToInstagramMp4(raw,setConversionPercent);
+            download(mp4,`bass-bin-instagram-${Date.now()}.mp4`);
+            setWarning('Instagram-ready MP4 saved: H.264 video, AAC audio, 30 FPS.');
+          }catch(e){
+            download(raw,`bass-bin-backup-${Date.now()}.${ext}`);
+            setWarning(`MP4 conversion unavailable in this browser: ${e instanceof Error?e.message:'codec unsupported'}. Recording saved as ${ext.toUpperCase()} backup; try desktop Chrome/Edge.`);
+          }
+        }finally{setConversionRunning(false);setConversionPercent(null);setExporting(false);}
       };
       stopExport.current=()=>{cancelRequested.current=true;if(rec.state!=='inactive')rec.stop()};
       setExporting(true);setCodec(mime);
