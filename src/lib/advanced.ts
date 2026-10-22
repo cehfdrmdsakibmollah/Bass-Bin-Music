@@ -60,5 +60,8 @@ export function trackTransition(track:Track,time:number):{opacity:number;dx:numb
   const f=Math.min(into,out);
   if(track.transition==='fade')return {opacity:f,dx:0,scale:1};
   if(track.transition==='slide')return {opacity:1,dx:(1-f)*-.23,scale:1};
+  if(track.transition==='whip')return {opacity:1,dx:(1-f)*.8,scale:1.08+(.08*(1-f))};
+  if(track.transition==='glitch')return {opacity:.68+.32*f,dx:Math.sin(f*43)*(1-f)*.06,scale:1};
+  if(track.transition==='spin')return {opacity:f,dx:0,scale:.65+.35*f};
   return {opacity:1,dx:0,scale:.80+f*.20};
 }
