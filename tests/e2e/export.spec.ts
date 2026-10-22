@@ -3,6 +3,8 @@ import { stat } from 'node:fs/promises';
 
 test('a short phonk audio project exports a real downloadable video in Chromium', async ({ page }) => {
   await page.goto('/studio');
+  // Preserve coverage for the fast original WebM mode alongside the new Instagram MP4 test.
+  await page.getByRole('combobox', { name: 'Export video format' }).selectOption('webm');
   const exportButton = page.getByRole('button', { name: 'Export to device' });
   await expect(exportButton).toBeEnabled();
 
