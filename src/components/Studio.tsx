@@ -11,8 +11,9 @@ import {detectBeats,generateTempoGrid,beatMarkersCSV,addManualBeat,removeNearest
 import {loadAsset,loadProject,saveAsset,saveProject} from '@/lib/storage';
 import {analyzeArrangement,autoDirector,generateMotion,quantizeBeatMap,quantizeTimeline,rippleMove,captionsSRT,editDecisionCSV,audioGainAt,type DirectorOptions,type MotionPreset} from '@/lib/director';
 import type {StudioProject,Track,TrackKind,Settings,Motion} from '@/lib/types';
+import {suggestHooks,applyShortHook,resizeComposition,joinNextAudio,restartPosition,MAX_COMPOSITION_SECONDS} from '@/lib/shorts';
 
-type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director';
+type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director'|'shorts';
 const icon:Record<TrackKind,string>={audio:'♫',image:'▣',video:'▶',text:'T',visualizer:'▥',effect:'✦'};
 function setVideoPlaybackRate(element:HTMLVideoElement,rate:number){element.playbackRate=rate;}
 function setVideoCurrentTime(element:HTMLVideoElement,seconds:number){element.currentTime=seconds;}
@@ -27,6 +28,13 @@ export default function Studio(){
   const history=useRef<{past:StudioProject[],future:StudioProject[]}>({past:[],future:[]});
   const [historyStats,setHistoryStats]=useState({undo:0,redo:0});
   const [panel,setPanel]=useState<Panel>('assets');
+  const [hookLength,setHookLength]=useState<15|30|60>(15);
+  const [sourceMap,setSourceMap]=useState<BeatMap|null>(null);
+  const [sourceSeconds,setSourceSeconds]=useState(0);
+  const [trimIn,setTrimIn]=useState(0);
+  const [trimOut,setTrimOut]=useState(20);
+  const [loopPreview,setLoopPreview]=useState(false);
+  const loopRef=useRef(false);
   const [insights,setInsights]=useState<AudioInsights|null>(null);
   const [snapEnabled,setSnapEnabled]=useState(true);
   const [beatsPerCut,setBeatsPerCut]=useState<1|2|4|8>(2);
@@ -75,6 +83,7 @@ export default function Studio(){
   const hasKeyframe=active?.keyframes?.some(k=>Math.abs(k.at-(position-active.start))<.05)||false;
   const audioTrack=project.tracks.find(t=>t.kind==='audio'&&t.assetId);
   const activeBeats=useMemo(()=>alignedBeats(project.beatSync,project.duration),[project.beatSync,project.duration]);
+  const hooks=useMemo(()=>suggestHooks(sourceMap||project.beatSync?.map,sourceSeconds||audioTrack?.sourceDuration||project.duration,hookLength),[sourceMap,sourceSeconds,audioTrack?.sourceDuration,project.beatSync?.map,project.duration,hookLength]);
   // Limit thousands of per-layer marker DOM nodes on phones; analysis remains full-resolution.
   const timelineMarks=useMemo(()=>{
     const interval=Math.max(1,Math.ceil(activeBeats.length/52));
@@ -104,6 +113,21 @@ export default function Studio(){
     const url=URL.createObjectURL(entry.file);objectUrls.current.set(id,url);
     let detected:BeatMap|null=null;
     if(entry.kind==='audio'&&audio.current){
+      audio.current.onloadedmetadata=()=>{
+        const dur=audio.current?.duration;
+        if(!dur||!Number.isFinite(dur))return;
+        const total=Math.min(MAX_COMPOSITION_SECONDS,dur);
+        setSourceSeconds(total);setTrimOut(v=>v===20?total:v);
+        const match=projectRef.current.tracks.find(t=>t.kind==='audio'&&t.assetId===id);
+        if(match&&!match.sourceDuration){
+          commit(p=>{
+            const original=p.tracks.find(t=>t.id===match.id);
+            if(!original||original.sourceDuration)return p;
+            const expanded=p.duration===20&&original.clipStart===undefined?resizeComposition(p,total):p;
+            return {...expanded,tracks:expanded.tracks.map(t=>t.id===match.id?{...t,sourceDuration:total,...(p.duration===20&&!t.clipStart?{duration:total}:{})}:t)};
+          });
+        }
+      };
       audio.current.src=url;audio.current.load();
       setInsights(null);
       // Skip memory-heavy decoding; video export continues to work without beat analysis.
@@ -114,6 +138,8 @@ export default function Studio(){
             const channel=decoded.getChannelData(0);
             setInsights(analyzePCM(channel,decoded.sampleRate));
             detected=detectBeats(channel,decoded.sampleRate);
+            setSourceMap(detected);setSourceSeconds(Math.min(MAX_COMPOSITION_SECONDS,decoded.duration));
+            setTrimOut(Math.min(MAX_COMPOSITION_SECONDS,decoded.duration));
             if(projectRef.current.tracks.some(t=>t.kind==='audio'&&t.assetId===id)&&!projectRef.current.beatSync){
               commit(p=>({...p,beatSync:{enabled:true,style:'drift',intensity:70,offset:0,map:detected!},updatedAt:Date.now()}));
             }
@@ -183,7 +209,10 @@ export default function Studio(){
       const now=clockNow();let t=playRef.current.base;
       if(playRef.current.playing){
         t=playRef.current.base+(now-playRef.current.at)/1000;
-        if(t>=p.duration){t=p.duration;playRef.current.playing=false;playRef.current.base=t;setPlaying(false);audio.current?.pause();}
+        if(t>=p.duration){
+          if(loopRef.current){t=0;playRef.current.base=0;playRef.current.at=now;positionRef.current=0;setPosition(0);syncMedia(0,true);}
+          else {t=p.duration;playRef.current.playing=false;playRef.current.base=t;positionRef.current=t;setPosition(t);setPlaying(false);audio.current?.pause();}
+        }
       }
       if(now-lastMediaSync.current>120){syncMedia(t,playRef.current.playing);lastMediaSync.current=now;}
       if(analyser.current)analyser.current.getByteFrequencyData(drawData.current);
@@ -216,7 +245,7 @@ export default function Studio(){
     await ctx.resume();
   };
   const updateAudioProcessing=()=>{
-    const p=projectRef.current,track=p.tracks.find(t=>t.kind==='audio');
+    const p=projectRef.current,track=p.tracks.find(t=>t.kind==='audio'&&!t.hidden&&positionRef.current>=t.start&&positionRef.current<t.start+t.duration);
     if(monitorGain.current){const live=track&&!track.hidden&&positionRef.current>=track.start&&positionRef.current<track.start+track.duration;
       monitorGain.current.gain.value=live?audioGainAt(track,positionRef.current):0;}
     if(eqNodes.current){const e=p.settings.eq||{bass:0,mid:0,treble:0,compressor:false};
@@ -229,7 +258,7 @@ export default function Studio(){
   const togglePlay=async()=>{
     if(playRef.current.playing){playRef.current.playing=false;playRef.current.base=positionRef.current;setPlaying(false);audio.current?.pause();for(const m of media.current.values())if(m instanceof HTMLVideoElement)m.pause();return;}
     try{
-      if(positionRef.current>=projectRef.current.duration)seek(0);
+      if(restartPosition(positionRef.current,projectRef.current.duration)===0)seek(0);
       await ensureAudio();
       playRef.current={playing:true,base:positionRef.current,at:clockNow()};syncMedia(positionRef.current,true);setPlaying(true);
     }catch(e){setWarning(`Playback was blocked: ${e instanceof Error?e.message:'unsupported format'}`)}
