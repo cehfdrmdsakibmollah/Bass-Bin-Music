@@ -179,7 +179,7 @@ export default function Studio(){
         const requestedTemplate=params.get('template');
         const id=params.get('id')||(requestedTemplate?null:localStorage.getItem('bbm-last-project'));
         if(id){const found=await loadProject(id);if(live&&found){projectRef.current=found;setProject(found);setSelected(found.tracks[0]?.id||'visualizer');for(const t of found.tracks)if(t.assetId)await attachAsset(t.assetId);}}
-        if(live&&requestedTemplate&&templates.some(t=>t.slug===requestedTemplate)&&!params.has('id')){const styled=applyTemplate(projectRef.current,requestedTemplate);projectRef.current=styled;setProject(styled);}
+        if(live&&requestedTemplate&&!params.has('id')){const styled=commitTemplateChoice(projectRef.current,requestedTemplate);if(styled!==projectRef.current){projectRef.current=styled;setProject(styled);}}
       }catch(e){if(live)setWarning(`Local storage unavailable: ${e instanceof Error?e.message:'unknown error'}`)}
       finally{if(live)setReady(true)}
     };
@@ -662,6 +662,15 @@ export default function Studio(){
             <i style={{background:`linear-gradient(135deg,${fx.values.primary||'#1a88cb'},${fx.values.secondary||'#ab3fff'})`}}/>
             <span><b>{fx.title}</b><small>{fx.description}</small></span>
           </button>)}</div>
+          <div className="panel-divider"/><h3>Camera motion presets</h3>
+          <p className="muted detail">Animate your selected image, video or caption with editable keyframes. These render identically in preview and export.</p>
+          <div className="motion-preset-buttons">
+            {([{id:'punch',label:'Bass Punch'},{id:'drift',label:'Drift Push'},{id:'orbit',label:'Aura Orbit'},{id:'glide',label:'Cinema Pan'}] as const).map(item=><button className="btn outline" key={item.id} disabled={!active||!['image','video','text'].includes(active.kind)} onClick={()=>{
+              if(!active)return;
+              commit(p=>({...p,updatedAt:Date.now(),tracks:p.tracks.map(t=>t.id===active.id?generateMotion(t,item.id,75):t)}));
+              setWarning(item.label+' keyframe animation applied. Open Inspector to edit.');
+            }}>{item.label}</button>)}
+          </div>
           <div className="panel-divider"/><h3>Manual clip transition</h3>
           <label className="field">Selected clip
             <select aria-label="Select transition" disabled={!active||!['image','video','text'].includes(active.kind)} value={active?.transition||'none'} onChange={e=>edit({transition:e.target.value as Track['transition']})}>
