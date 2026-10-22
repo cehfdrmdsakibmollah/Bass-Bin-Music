@@ -154,7 +154,7 @@ export default function Studio(){
       const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;v.preload='auto';v.onloadeddata=()=>{media.current.set(id,v);setMediaReady(x=>x+1)};v.load();
     }
     return detected;
-  },[commit]);
+  },[commit,setWarning]);
   useEffect(()=>{
     let live=true;
     const capabilityTimer=setTimeout(()=>{if(live)setBrowserExport(typeof HTMLCanvasElement!=='undefined'&&!!HTMLCanvasElement.prototype.captureStream&&!!getExportMime());},0);
@@ -596,7 +596,7 @@ export default function Studio(){
             <button className="btn outline full" onClick={()=>commit(p=>({...p,settings:{...p.settings,aspect:'9:16',width:720,fps:30}}))}>▯ Set 9:16 vertical Shorts canvas</button>
           </>}
           <div className="panel-divider"/><h3>Footage inspiration (optional)</h3>
-          <p className="muted detail">Browse creator-licensed stock footage, download a clip yourself and import it from Assets. Nothing is fetched automatically. Check each clip's rights, trademarks and releases before publishing.</p>
+          <p className="muted detail">Browse creator-licensed stock footage, download a clip yourself and import it from Assets. Nothing is fetched automatically. Check each clip&apos;s rights, trademarks and releases before publishing.</p>
           <div className="shorts-stock">
           {(['car drifting','neon street','night driving','smoke lights','motorcycle riding'] as const).map(term=><a className="btn outline" key={term} href={`https://www.pexels.com/search/videos/${encodeURIComponent(term)}/`} target="_blank" rel="noopener noreferrer">{term} ↗</a>)}
           </div>
