@@ -232,7 +232,8 @@ export default function Studio(){
       if(now-lastMediaSync.current>120){syncMedia(t,playRef.current.playing);lastMediaSync.current=now;}
       if(analyser.current)analyser.current.getByteFrequencyData(drawData.current);
       else drawData.current.fill(0);
-      const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,previewTemplateRef.current?commitTemplateChoice(p,previewTemplateRef.current).settings:p.settings,previewTemplateRef.current?commitTemplateChoice(p,previewTemplateRef.current).tracks:p.tracks,drawData.current,t,media.current,p.beatSync);
+      const preview=previewTemplateRef.current?commitTemplateChoice(p,previewTemplateRef.current):p;
+       const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,preview.settings,preview.tracks,drawData.current,t,media.current,preview.beatSync);
       if(playRef.current.playing&&Math.abs(positionRef.current-t)>.09){positionRef.current=t;setPosition(t);}
       raf.current=requestAnimationFrame(render);
     };
