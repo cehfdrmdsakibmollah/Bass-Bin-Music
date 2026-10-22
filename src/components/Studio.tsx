@@ -16,6 +16,7 @@ import {convertToInstagramMp4} from '@/lib/instagram-export';
 import PhonkMusicLab from '@/components/PhonkMusicLab';
 import {PHONK_FX_PRESETS,applyPhonkFx} from '@/lib/phonk-fx';
 import {AURA_PRESETS,commitTemplateChoice} from '@/lib/ultra-aura';
+import {MONTAGE_STYLES,createPhonkMontage,type PhonkMontageStyle} from '@/lib/phonk-montage';
 
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director'|'shorts'|'music'|'fxlab'|'discover';
 const PANELS:Panel[]=['assets','music','shorts','templates','fxlab','beats','director','effects','discover','inspector'];
@@ -37,7 +38,8 @@ export default function Studio(){
   const [mobileSheet,setMobileSheet]=useState<'closed'|'tools'|'export'>('closed');
   const [previewTemplate,setPreviewTemplate]=useState<string|null>(null);
   const previewTemplateRef=useRef<string|null>(null);
-  const [templateCategory,setTemplateCategory]=useState('Signature Phonk');
+  const [templateCategory,setTemplateCategory]=useState('Phonk Montage');
+  const [montageStyle,setMontageStyle]=useState<PhonkMontageStyle>('hardcut');
   const [hookLength,setHookLength]=useState<15|30|60>(15);
   const [fxScope,setFxScope]=useState<'selected'|'all'>('all');
   const [trendQuery,setTrendQuery]=useState('brazilian phonk');
@@ -88,6 +90,7 @@ export default function Studio(){
   const lastMediaSync=useRef(0);
   const objectUrls=useRef<Map<string,string>>(new Map());
   const media=useRef<Map<string,MediaCanvasAsset>>(new Map());
+  const videoDurations=useRef<Map<string,number>>(new Map());
   const raf=useRef(0);
   const drawData=useRef<Uint8Array<ArrayBuffer>>(new Uint8Array(512));
   const [mediaReady,setMediaReady]=useState(0);
@@ -166,7 +169,15 @@ export default function Studio(){
       const img=new Image();img.onload=()=>{media.current.set(id,img);setMediaReady(v=>v+1)};img.src=url;
     }
     if(entry.kind==='video'){
-      const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;v.preload='auto';v.onloadeddata=()=>{media.current.set(id,v);setMediaReady(x=>x+1)};v.load();
+      const v=document.createElement('video');v.src=url;v.muted=true;v.playsInline=true;v.preload='auto';v.onloadedmetadata=()=>{
+        if(!Number.isFinite(v.duration)||v.duration<=0)return;
+        const seconds=Math.min(600,v.duration);
+        videoDurations.current.set(id,seconds);
+        if(projectRef.current.tracks.some(t=>t.kind==='video'&&t.assetId===id&&!t.sourceDuration)){
+          commit(p=>({...p,tracks:p.tracks.map(t=>t.kind==='video'&&t.assetId===id&&!t.sourceDuration?{...t,sourceDuration:seconds}:t)}));
+        }
+      };
+      v.onloadeddata=()=>{media.current.set(id,v);setMediaReady(x=>x+1)};v.load();
     }
     return detected;
   },[commit,setWarning]);
@@ -207,9 +218,10 @@ export default function Studio(){
     }
     for(const [assetId,m] of media.current){if(!(m instanceof HTMLVideoElement))continue;
       const clip=p.tracks.find(x=>x.kind==='video'&&x.assetId===assetId&&!x.hidden&&t>=x.start&&t<x.start+x.duration);
-      if(clip){const rate=clip.playbackRate||1,expected=(t-clip.start)*rate+(clip.clipStart||0);
+      if(clip){const rate=clip.playbackRate||1,unwrapped=(t-clip.start)*rate+(clip.clipStart||0);
+        const expected=clip.id.startsWith('montage-')&&Number.isFinite(m.duration)&&m.duration>.15?unwrapped%m.duration:unwrapped;
         if(Math.abs(m.playbackRate-rate)>.001)setVideoPlaybackRate(m,rate);
-        if(Number.isFinite(m.duration)&&expected>=m.duration){m.pause();continue;}
+        if(Number.isFinite(m.duration)&&expected>=m.duration&&!clip.id.startsWith('montage-')){m.pause();continue;}
         if(Math.abs((m.currentTime||0)-expected)>.23){try{setVideoCurrentTime(m,expected);}catch{}}
         if(shouldPlay&&m.paused)void m.play().catch(()=>{});
       }else if(!m.paused)m.pause();
@@ -286,12 +298,12 @@ export default function Studio(){
       const track=parseUpload(kind,file);
       await saveAsset({id:track.assetId!,kind,name:file.name,file});
       const beatMap=await attachAsset(track.assetId!);
-      const sourceDuration=beatMap?.duration||(audio.current&&Number.isFinite(audio.current.duration)?audio.current.duration:20);
+      const sourceDuration=kind==='video'?videoDurations.current.get(track.assetId!):beatMap?.duration||(audio.current&&Number.isFinite(audio.current.duration)?audio.current.duration:20);
       commit(p=>{
         const length=kind==='audio'?Math.min(MAX_COMPOSITION_SECONDS,Math.max(1,sourceDuration)):p.duration;
         const base=kind==='audio'?resizeComposition(p,length):p;
         const tracks=kind==='audio'?base.tracks.filter(x=>x.kind!=='audio'):[...base.tracks];
-        return {...base,updatedAt:Date.now(),tracks:[{...track,duration:length,...(kind==='audio'?{sourceDuration:length}: {})},...tracks],
+        return {...base,updatedAt:Date.now(),tracks:[{...track,duration:length,...(kind==='audio'?{sourceDuration:length}:kind==='video'&&sourceDuration?{sourceDuration}: {})},...tracks],
           ...(kind==='audio'?{beatSync:beatMap?{enabled:true,style:'drift' as const,intensity:70,offset:0,map:beatMap}:undefined}: {})};
       });
       if(kind==='audio'){setSourceSeconds(Math.min(MAX_COMPOSITION_SECONDS,sourceDuration));setTrimIn(0);setTrimOut(Math.min(MAX_COMPOSITION_SECONDS,sourceDuration));setPanel('shorts');}
@@ -630,6 +642,13 @@ export default function Studio(){
     commit(p=>commitTemplateChoice(p,slug));
     previewTemplateRef.current=null;setPreviewTemplate(null);
     setWarning('Template applied: '+(templates.find(t=>t.slug===slug)?.name||AURA_PRESETS.find(t=>t.slug===slug)?.title||slug)+'. Undo is available.');
+    setMobileSheet('closed');
+  };
+  const buildMontage=()=>{
+    const result=createPhonkMontage(projectRef.current,montageStyle);
+    if(result.reason){setWarning(result.reason);return;}
+    commit(()=>result.project);seek(0);setSelected(result.project.tracks.find(t=>t.id.startsWith('montage-'))?.id||'visualizer');
+    setWarning(`Created ${result.cuts} editable clips ${result.usedAudioBeats?'aligned to detected beats/drops':'with fallback pacing; beat detection unavailable'}. Undo available.`);
     setMobileSheet('closed');
   };
   const createAuraReel=()=>{
