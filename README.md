@@ -1,3 +1,5 @@
+> **New in Shorts Lab v0.5:** music-aware 15/30/60 second hook suggestions (offline heuristic, not verified viral trends), optional apply to vertical 9:16 video, optional Auto Sync of **your imported** clips, full-song editing up to 10 minutes, manual source In/Out crop, audio split/join, loop and end-of-track replay. [Shorts Lab guide](docs/SHORTS-LAB-V05.md). All changes preserve Undo and your original media. Creator-licensed stock footage search is optional and external; no automatic third-party video harvesting.
+
 # BASS BIN MUSIC — Auto Director Pro v0.4
 
 > **Latest release:** Extended from the user’s v0.3 Phonk BeatSync ZIP. The original logo is intact. This is an **advanced source release**, not a production-verified deployment.
