@@ -32,8 +32,12 @@ export function splitTrack(project:StudioProject,id:string,at:number,newId:strin
   const i=project.tracks.findIndex(t=>t.id===id);
   if(i<0||project.tracks.length>=80)return project;
   const track=project.tracks[i];
-  // Audio source editing is single-source in this release: no false multichannel/mixer claim.
-  if(track.kind==='audio'||at<=track.start+.10||at>=track.start+track.duration-.10)return project;
+  if(at<=track.start+.10||at>=track.start+track.duration-.10)return project;
+  if(track.kind==='audio'){
+    const before=Math.round((at-track.start)*1000)/1000,after=Math.round((track.duration-before)*1000)/1000;
+    const tracks=[...project.tracks];tracks.splice(i,1,{...track,duration:before},{...track,id:newId,label:`${track.label} • part 2`,start:at,duration:after,clipStart:(track.clipStart||0)+before,fadeIn:0});
+    return {...project,tracks,updatedAt:Date.now()};
+  }
   const before=at-track.start, after=track.duration-before;
   const boundary=evaluateMotion(track,at);
   const leftKeys=[...(track.keyframes||[]).filter(k=>k.at<before),{at:before,...boundary}];
