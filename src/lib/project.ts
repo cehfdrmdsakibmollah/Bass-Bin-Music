@@ -35,7 +35,7 @@ function validTrack(t:unknown,total:number):boolean {
     typeof x.hidden!=='boolean'||typeof x.muted!=='boolean'||!finite(x.start,0,total)||!finite(x.duration,.1,total)||x.start+x.duration>total+.011)return false;
   if(x.text!==undefined&&!plain(x.text,100)||x.assetId!==undefined&&!plain(x.assetId,110)||x.clipStart!==undefined&&!finite(x.clipStart,0,60000)||x.sourceDuration!==undefined&&!finite(x.sourceDuration,0.1,600)||
     x.volume!==undefined&&!finite(x.volume,0,2)||x.motion!==undefined&&!validMotion(x.motion)||
-    x.transition!==undefined&&!enums(x.transition,['none','fade','slide','zoom'])||
+    x.transition!==undefined&&!enums(x.transition,['none','fade','slide','zoom','whip','glitch','spin'])||
     x.fontSize!==undefined&&!finite(x.fontSize,.015,.24)||x.fontColor!==undefined&&!color(x.fontColor)||
     x.fontFamily!==undefined&&!enums(x.fontFamily,['sans','serif','mono'])||
     x.fit!==undefined&&!enums(x.fit,['contain','cover'])||
@@ -56,7 +56,7 @@ export function normalizeProject(data:unknown):StudioProject|null {
   if(!finite(p.duration,1,600)||!plain(p.template,100)||!finite(p.createdAt,0,1e16)||!finite(p.updatedAt,0,1e16))return null;
   const s=p.settings;
   if(!enums(s.aspect,['16:9','9:16','1:1'])||![24,30,60].includes(s.fps)||![720,1080,1280].includes(s.width)||
-    !enums(s.mode,['bars','circle','wave','particles','mirror','spiral','rings'])||!color(s.background)||!color(s.primary)||!color(s.secondary)||!plain(s.title,100))return null;
+    !enums(s.mode,['bars','circle','wave','particles','mirror','spiral','rings','avee','ncs','catpulse'])||!color(s.background)||!color(s.primary)||!color(s.secondary)||!plain(s.title,100))return null;
   for(const n of ['intensity','glow','shake','particles','zoom'] as const){if(!finite(s[n],0,100))return null;}
   if(s.vignette!==undefined&&!finite(s.vignette,0,100)||s.grain!==undefined&&!finite(s.grain,0,100)||
     s.beatPulse!==undefined&&!finite(s.beatPulse,0,100)||s.bitrate!==undefined&&![2,5,8].includes(s.bitrate)||
