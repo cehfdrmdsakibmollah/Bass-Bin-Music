@@ -22,7 +22,7 @@ function drawLayer(ctx:CanvasRenderingContext2D,t:Track,time:number,w:number,h:n
   ctx.save();ctx.globalAlpha=Math.max(0,Math.min(1,motion.opacity*tr.opacity*Math.min(fadeIn,fadeOut)));
   ctx.globalCompositeOperation=composite(t.blend);
   ctx.translate(w*(motion.x/100+tr.dx),h*motion.y/100);
-  ctx.rotate(motion.rotation*Math.PI/180);
+  ctx.rotate((motion.rotation+(tr.rotation||0))*Math.PI/180);
   ctx.scale(motion.scale*tr.scale*(t.flipX?-1:1),motion.scale*tr.scale);
   if((t.kind==='image'||t.kind==='video')&&t.assetId){
     const item=media.get(t.assetId);
