@@ -301,10 +301,11 @@ export default function Studio(){
     if(next===before){setWarning('Move the playhead inside a clip before splitting.');return;}
     commit(()=>next);setSelected(id);
   };
-  const addShort=(start:number,end:number,shorts=true)=>{
+  const addShort=(start:number,end:number,shorts=true,arrange=false)=>{
     const p=projectRef.current,source=p.tracks.find(t=>t.kind==='audio'&&t.assetId);
     if(!source?.assetId){setWarning('Import a song before creating a Shorts cut.');return;}
-    const next=applyShortHook(p,source.assetId,start,end,sourceMap);
+    const trimmed=applyShortHook(p,source.assetId,start,end,sourceMap);
+    const next=arrange?autoDirector(trimmed,{beatsPerCut,transition:montageTransition,motion:directorMotion,focus:directorFocus,minStrength:directorStrength,maxClips:58}):trimmed;
     if(next===p){setWarning('Invalid audio range; select a shorter interval inside your song.');return;}
     commit(()=>shorts?next:{...next,settings:p.settings});
     setSelected(source.id);setTrimIn(start);setTrimOut(end);seek(0);
@@ -582,6 +583,7 @@ export default function Studio(){
                 <button className="btn outline" onClick={()=>seek(Math.min(hook.start,projectRef.current.duration))}>▶ Preview point</button>
                 <button className="btn primary" onClick={()=>addShort(hook.start,hook.end)}>Use this hook</button>
               </div>
+              {picture&&<button className="btn outline full" onClick={()=>addShort(hook.start,hook.end,true,true)}>⚡ Use hook + Auto Sync imported footage</button>}
             </div>)}</div>
             <div className="panel-divider"/><h3>Manual audio crop & join</h3>
             <p className="muted detail">Keep your whole song, set In/Out points manually, split at the playhead, and join adjacent segments. All operations are reversible.</p>
