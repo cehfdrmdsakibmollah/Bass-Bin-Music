@@ -15,7 +15,7 @@ import {suggestHooks,applyShortHook,resizeComposition,joinNextAudio,restartPosit
 import {convertToInstagramMp4} from '@/lib/instagram-export';
 import PhonkMusicLab from '@/components/PhonkMusicLab';
 import {PHONK_FX_PRESETS,applyPhonkFx} from '@/lib/phonk-fx';
-import {AURA_PRESETS,previewTemplateSettings,commitTemplateChoice} from '@/lib/ultra-aura';
+import {AURA_PRESETS,commitTemplateChoice} from '@/lib/ultra-aura';
 
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director'|'shorts'|'music'|'fxlab'|'discover';
 const PANELS:Panel[]=['assets','music','shorts','templates','fxlab','beats','director','effects','discover','inspector'];
@@ -232,7 +232,7 @@ export default function Studio(){
       if(now-lastMediaSync.current>120){syncMedia(t,playRef.current.playing);lastMediaSync.current=now;}
       if(analyser.current)analyser.current.getByteFrequencyData(drawData.current);
       else drawData.current.fill(0);
-      const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,previewTemplateRef.current?previewTemplateSettings(p,previewTemplateRef.current):p.settings,p.tracks,drawData.current,t,media.current,p.beatSync);
+      const ctx=element.getContext('2d',{alpha:false});if(ctx)drawFrame(ctx,previewTemplateRef.current?commitTemplateChoice(p,previewTemplateRef.current).settings:p.settings,previewTemplateRef.current?commitTemplateChoice(p,previewTemplateRef.current).tracks:p.tracks,drawData.current,t,media.current,p.beatSync);
       if(playRef.current.playing&&Math.abs(positionRef.current-t)>.09){positionRef.current=t;setPosition(t);}
       raf.current=requestAnimationFrame(render);
     };
@@ -636,11 +636,11 @@ export default function Studio(){
     const music=original.tracks.find(t=>t.kind==='audio'&&t.assetId);
     const len=Math.min(15,music?.sourceDuration||15);
     const base=music?.assetId?applyShortHook(original,music.assetId,0,len,sourceMap):resizeComposition(original,15);
-    const preset=commitTemplateChoice(base,'ultra-aura');
+    const preset=commitTemplateChoice(base,'signature-skull');
     commit(()=>({...preset,settings:{...preset.settings,aspect:'9:16',width:720,fps:30}}));
     previewTemplateRef.current=null;setPreviewTemplate(null);
     seek(0);setMobileSheet('closed');
-    setWarning('Ultra Aura 9:16 Reel ready. Add your own footage/music or export.');
+    setWarning('Dark Skull Bass 9:16 Reel ready. Add your own footage/music or export.');
   };
   const range=(key:keyof Pick<Settings,'intensity'|'glow'|'shake'|'particles'|'zoom'|'vignette'|'grain'|'beatPulse'|'scanlines'|'chromatic'|'letterbox'>,title:string,max=100)=>
     <label className="slider-field" key={key}><span>{title}<strong>{project.settings[key]??0}%</strong></span><input type="range" min={0} max={max} value={project.settings[key]??0} onChange={e=>setSetting(key,Number(e.target.value))}/></label>;
@@ -750,7 +750,7 @@ export default function Studio(){
           <div className="panel-heading"><h2>Ultra Aura & Phonk Templates</h2><small>{templates.length+AURA_PRESETS.length} editable</small></div>
           <p className="muted detail">Preview any original theme before applying. Your timeline, uploaded media and project remain unchanged until you confirm.</p>
           <div className="template-filters" role="group" aria-label="Template categories">
-            {['All','Ultra Aura','Phonk','Drift','Avee Inspired','NCS Inspired','Dark','Bass'].map(cat=><button key={cat} aria-pressed={templateCategory===cat} onClick={()=>setTemplateCategory(cat)}>{cat}</button>)}
+            {['All','Signature Phonk','Phonk','Drift','Avee Inspired','NCS Inspired','Ultra Aura','Dark','Bass'].map(cat=><button key={cat} aria-pressed={templateCategory===cat} onClick={()=>setTemplateCategory(cat)}>{cat}</button>)}
           </div>
           {previewTemplate&&<div className="template-confirm" role="status">
             <strong>Previewing: {templates.find(t=>t.slug===previewTemplate)?.name||AURA_PRESETS.find(t=>t.slug===previewTemplate)?.title}</strong>
@@ -758,11 +758,15 @@ export default function Studio(){
             <div className="beat-action-pair"><button className="btn primary" onClick={applyChoice}>✓ Apply Template</button><button className="btn outline" onClick={cancelChoice}>✕ Cancel Preview</button></div>
           </div>}
           <div className="mini-templates mobile-template-grid">
+            {templates.filter(t=>t.category==='Signature Phonk'&&(templateCategory==='All'||templateCategory==='Signature Phonk')).map(t=><button key={t.slug} className={`mini-template signature-card ${project.template===t.slug?'chosen':''} ${previewTemplate===t.slug?'preview-chosen':''}`} aria-pressed={previewTemplate===t.slug} onClick={()=>previewChoice(t.slug)}>
+              <span className="mini-art signature-poster"><img src={`/signature-${t.slug.slice(10)}.svg`} alt="" loading="lazy"/></span>
+              <b>{t.name}</b><small>Signature Phonk · Original</small>
+            </button>)}
             {AURA_PRESETS.filter(t=>templateCategory==='All'||templateCategory==='Ultra Aura').map(t=><button key={t.slug} className={`mini-template ${project.template===t.slug?'chosen':''} ${previewTemplate===t.slug?'preview-chosen':''}`} aria-pressed={previewTemplate===t.slug} onClick={()=>previewChoice(t.slug)}>
               <span className="mini-art" style={{background:`radial-gradient(circle at 50% 50%,#0a1130 13%,${t.colors[0]}ad 17%,#111630 23%,${t.colors[1]}b8 33%,#080c20 53%,${t.colors[0]}45 85%)`}}><span style={{borderColor:t.colors[0]}}/></span>
               <b>{t.title}</b><small>Ultra Aura · {t.category}</small>
             </button>)}
-            {templates.filter(t=>templateCategory==='All'||t.category===templateCategory).map(t=><button key={t.slug} className={`mini-template ${project.template===t.slug?'chosen':''} ${previewTemplate===t.slug?'preview-chosen':''}`} aria-pressed={previewTemplate===t.slug} onClick={()=>previewChoice(t.slug)}>
+            {templates.filter(t=>t.category!=='Signature Phonk'&&(templateCategory==='All'||t.category===templateCategory)).map(t=><button key={t.slug} className={`mini-template ${project.template===t.slug?'chosen':''} ${previewTemplate===t.slug?'preview-chosen':''}`} aria-pressed={previewTemplate===t.slug} onClick={()=>previewChoice(t.slug)}>
               <span className="mini-art" style={{background:`radial-gradient(circle at 70% 32%,${t.colors[0]}6c,transparent 55%),radial-gradient(circle at 22% 75%,${t.colors[1]}7c,transparent 60%),#121424`}}><span style={{borderColor:t.colors[0]}}/></span>
               <b>{t.name}</b><small>{t.category}</small>
             </button>)}
@@ -851,7 +855,7 @@ export default function Studio(){
       </aside>
       <section className="studio-workspace" aria-label="Video editing workspace">
         <div className="mobile-quick-actions">
-          <button onClick={createAuraReel}>✦ Ultra Aura 15s</button>
+          <button onClick={createAuraReel}>☠ Dark Phonk 15s</button>
           <button onClick={()=>openMobilePanel('templates')}>❖ Templates</button>
           <button onClick={()=>openMobilePanel('fxlab')}>⚡ Motion FX</button>
           <button onClick={()=>openMobilePanel('assets')}>＋ Media</button>
