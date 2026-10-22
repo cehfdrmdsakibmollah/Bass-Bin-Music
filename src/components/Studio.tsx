@@ -375,7 +375,7 @@ export default function Studio(){
   const addText=()=>{
     const id=`track-${crypto.randomUUID()}`;
     commit(p=>({...p,tracks:[...p.tracks,{id,kind:'text',label:'New text',text:'YOUR TEXT',transition:'fade',motion:{y:30},start:0,duration:p.duration,hidden:false,muted:false}]}));
-    setSelected(id);setPanel('inspector');
+    setSelected(id);openMobilePanel('inspector');
   };
   const duplicate=()=>{
     if(!active)return;
@@ -694,7 +694,7 @@ export default function Studio(){
           </div>
           <div className="panel-divider"/><h3>Copyright & remix rights</h3>
           <p className="muted detail">A trending track is not automatically free to reuse. Confirm permission for both recordings and compositions. NCS standard creator policy specifically excludes simple music visualizers/reuploads. Mixing two songs does not avoid copyright.</p>
-          <button className="btn primary full" onClick={()=>setPanel('music')}>♫ Open Phonk Music Lab</button>
+          <button className="btn primary full" onClick={()=>openMobilePanel('music')}>♫ Open Phonk Music Lab</button>
         </>}
         {panel==='shorts'&&<>
           <div className="panel-heading"><h2>Shorts Lab</h2><small>9:16 · creator tools</small></div>
@@ -854,9 +854,9 @@ export default function Studio(){
              <button disabled={!active} onClick={remove}>⌫ Delete</button>
            </div>
          </div>
-         <div className="timeline"><div className="timeline-top"><h2>Multitrack timeline <span className="timeline-info">{project.tracks.length} layers</span></h2><div className="timeline-actions"><button className="btn tiny outline" onClick={addText}>+ Text</button><button className="btn tiny outline" onClick={()=>{const id=`track-${crypto.randomUUID()}`;commit(p=>({...p,tracks:[...p.tracks,{id,kind:'effect',label:'New FX layer',start:0,duration:p.duration,hidden:false,muted:false}]}));setSelected(id);}}>+ FX</button><button className="btn tiny outline" disabled={!active} onClick={splitAtPlayhead} title="Split audio, text, or visual clip at playhead (S)">✂ Split</button><button className="btn tiny outline" onClick={()=>setPanel('shorts')}>▯ Shorts Lab</button><button className="btn tiny outline" onClick={()=>setPanel('beats')}>⚡ Beat Sync</button><button className="btn tiny outline" onClick={()=>setPanel('director')}>✦ Auto Director</button><label className="snap-control"><input type="checkbox" checked={snapEnabled} onChange={e=>setSnapEnabled(e.target.checked)}/> Beat snap</label></div></div>
+         <div className="timeline"><div className="timeline-top"><h2>Multitrack timeline <span className="timeline-info">{project.tracks.length} layers</span></h2><div className="timeline-actions"><button className="btn tiny outline" onClick={addText}>+ Text</button><button className="btn tiny outline" onClick={()=>{const id=`track-${crypto.randomUUID()}`;commit(p=>({...p,tracks:[...p.tracks,{id,kind:'effect',label:'New FX layer',start:0,duration:p.duration,hidden:false,muted:false}]}));setSelected(id);}}>+ FX</button><button className="btn tiny outline" disabled={!active} onClick={splitAtPlayhead} title="Split audio, text, or visual clip at playhead (S)">✂ Split</button><button className="btn tiny outline" onClick={()=>openMobilePanel('shorts')}>▯ Shorts Lab</button><button className="btn tiny outline" onClick={()=>openMobilePanel('beats')}>⚡ Beat Sync</button><button className="btn tiny outline" onClick={()=>openMobilePanel('director')}>✦ Auto Director</button><label className="snap-control"><input type="checkbox" checked={snapEnabled} onChange={e=>setSnapEnabled(e.target.checked)}/> Beat snap</label></div></div>
           <div className="timeline-ruler" aria-hidden="true"><span>00:00</span><span>{formatSeconds(project.duration*.25)}</span><span>{formatSeconds(project.duration*.5)}</span><span>{formatSeconds(project.duration*.75)}</span><span>{formatSeconds(project.duration)}</span></div>
-          <div className="beat-info">{project.beatSync?<><strong>{project.beatSync.map.bpm?`≈ ${project.beatSync.map.bpm} BPM`:'Manual / unknown BPM'}</strong><span>{activeBeats.length} sync markers · {beatDrops} drop candidates · <button type="button" onClick={()=>setPanel('beats')}>Edit beat map ↗</button></span></>:<span>Import audio to detect beat markers, then open the Beat Sync panel.</span>}</div>
+          <div className="beat-info">{project.beatSync?<><strong>{project.beatSync.map.bpm?`≈ ${project.beatSync.map.bpm} BPM`:'Manual / unknown BPM'}</strong><span>{activeBeats.length} sync markers · {beatDrops} drop candidates · <button type="button" onClick={()=>openMobilePanel('beats')}>Edit beat map ↗</button></span></>:<span>Import audio to detect beat markers, then open the Beat Sync panel.</span>}</div>
           <div className="track-list">{project.tracks.map((t,i)=><div className={`track-row ${selected===t.id?'picked':''}`} key={t.id}><button className="track-name" onClick={()=>selectForEdit(t.id)} title={`${t.kind}: ${t.label}`}><span className="track-kind">{icon[t.kind]}</span><span>{t.label}</span></button><div className="track-lane" onClick={e=>{const rect=e.currentTarget.getBoundingClientRect();seek((e.clientX-rect.left)/rect.width*project.duration)}}>
                     {timelineMarks.map((beat,bi)=><span key={bi} className={`beat-mark ${beat.drop?'drop-mark':''}`} title={`${beat.drop?'DROP · ':''}${beat.band} ${beat.at.toFixed(2)}s`} style={{left:`${beat.at/project.duration*100}%`}}/>)}
                     <button data-track={t.id} onPointerDown={e=>onDragStart(e,t)} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd} className={`track-segment ${t.kind} ${t.hidden?'dimmed':''}`} style={{left:`${(dragState?.id===t.id?dragState.start:t.start)/project.duration*100}%`,width:`${t.duration/project.duration*100}%`}} title={`${t.label}; drag to move; select to inspect`} onClick={e=>{e.stopPropagation();selectForEdit(t.id)}}>
