@@ -28,7 +28,10 @@ test('splitting a visual clip preserves source offset and interpolated keyframes
   assert.equal(evaluateMotion(b,10).x,90);
   assert.equal(splitTrack(p,'title',0,'nope'),p);
   const trackAudio={...p.tracks[0],id:'audio',kind:'audio'};
-  assert.equal(splitTrack({...p,tracks:[trackAudio]},'audio',5,'another').tracks.length,1);
+  const audioParts=splitTrack({...p,tracks:[trackAudio]},'audio',5,'another').tracks;
+  assert.equal(audioParts.length,2);
+  assert.equal(audioParts[1].clipStart,5);
+  assert.equal(audioParts[1].duration,15);
 });
 test('timeline snapping uses nearest actual detected beat only within tolerance',()=>{
   assert.equal(snapTime(2.07,[1,2,3]),2);
