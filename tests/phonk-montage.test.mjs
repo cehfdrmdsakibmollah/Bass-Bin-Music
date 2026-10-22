@@ -29,6 +29,7 @@ test('montage has three clearly different editing styles',()=>{
  assert.equal(MONTAGE_STYLES.length,3);
  assert.equal(new Set(MONTAGE_STYLES.map(s=>s.id)).size,3);
  const source=fixture();
+ const originalJSON=JSON.stringify(source);
  for(const style of MONTAGE_STYLES){
    const {project,cuts,reason,usedAudioBeats}=createPhonkMontage(source,style.id);
    assert.equal(reason,undefined);
@@ -44,7 +45,7 @@ test('montage has three clearly different editing styles',()=>{
    assert.ok(visuals.every(t=>t.keyframes.length>=2&&t.duration>=.1));
    assert.ok(normalizeProject(project),'normalized '+style.id);
  }
- assert.deepEqual(source,fixture());
+ assert.equal(JSON.stringify(source),originalJSON);
 });
 test('montage never adds gaps, reuses source offsets within duration and stays under layer limits',()=>{
  const {project}=createPhonkMontage(fixture(),'hardcut');
