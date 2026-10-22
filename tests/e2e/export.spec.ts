@@ -8,7 +8,7 @@ test('a short phonk audio project exports a real downloadable video in Chromium'
 
   const panels = page.getByRole('navigation', { name: 'Studio panels' });
   await panels.getByRole('button', { name: /inspector/i }).click();
-  const duration = page.getByLabel('Duration (seconds)');
+  const duration = page.getByRole('spinbutton', { name: 'Duration (seconds)' }).last();
   await duration.fill('2');
   await duration.press('Tab');
   await expect(duration).toHaveValue('2');
