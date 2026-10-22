@@ -1,39 +1,33 @@
-# Upload the full BASS BIN MUSIC v0.4 project
+# Publish v0.4 to GitHub
 
-The GitHub repository is initialized, but at this stage **the complete project files are not yet uploaded**. Your v0.4 package is available in the ChatGPT conversation as **BASS_BIN_MUSIC_GitHub_Ready_v0.4.zip**.
+Target: https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music
 
-## Windows: easiest method
+The connected repository was empty before its README was initialized. This package contains the full v0.4 sources and binary artwork, ready to publish from Windows. **Until the script runs successfully, a remote README alone does not mean the project source has been uploaded.**
 
-1. Download the GitHub-ready ZIP from ChatGPT and extract it.
-2. Open the extracted `bass-bin-music` folder.
-3. Install [Git for Windows](https://git-scm.com/download/win).
-4. Double-click `publish-to-github.bat`.
-5. When GitHub asks, sign in using the browser or credential manager.
-6. Review the files and type **YES** to authorize the push.
-7. Verify that `src/`, `public/`, `tests/`, `docs/`, and `package.json` are present at [Bass-Bin-Music](https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music).
+## Easy Windows method
 
-The publishing helper clones the current `main` branch, copies the full project, and prompts before committing and pushing. It does not require you to paste a token into chat or source code.
+1. Download the **BASS_BIN_MUSIC_GitHub_Ready_v0.4.zip** from ChatGPT.
+2. Extract it. Open its **bass-bin-music** folder.
+3. Install Git for Windows and sign in to GitHub when prompted.
+4. Double-click **publish-to-github.bat**.
+5. Review the staged summary. Type `YES` to approve the upload.
+6. Check the repository in your browser after Git reports a successful push.
 
-## Manual alternative
+The script clones `main` and overlays the project, without deleting unrelated remote files. It ignores local secrets and generated build folders. It does not modify your existing local working directory or use a personal-access token saved in source code.
 
-Extract the v0.4 project, then clone this repository with Git. Copy the extracted project **contents** into the clone, excluding any .env files or build directories, then run:
+## Manual method
 
-```bash
-git add -A
+Clone the existing repository, copy **the contents** of `bass-bin-music` into the clone, then run:
+
+```powershell
+git add --all
 git status
 git commit -m "feat: import BASS BIN MUSIC Auto Director Pro v0.4"
 git push origin main
 ```
 
-## After uploading
+## CI status
 
-```bash
-npm install
-npm test
-npm run typecheck
-npm run lint
-npm run build
-npm run dev
-```
+The included GitHub Actions workflow runs npm tests, typecheck, lint, and build when source files are pushed. This does not mean those checks already passed on GitHub. Review the Actions tab for the actual results.
 
-Check the GitHub Actions tab for actual CI outcomes. A created workflow does not guarantee a passing build.
+Do not upload `.env`, API keys, admin SDK JSON files, tokens, or private media to the public GitHub repository.
