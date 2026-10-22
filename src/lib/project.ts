@@ -56,7 +56,7 @@ export function normalizeProject(data:unknown):StudioProject|null {
   if(!finite(p.duration,1,600)||!plain(p.template,100)||!finite(p.createdAt,0,1e16)||!finite(p.updatedAt,0,1e16))return null;
   const s=p.settings;
   if(!enums(s.aspect,['16:9','9:16','1:1'])||![24,30,60].includes(s.fps)||![720,1080,1280].includes(s.width)||
-    !enums(s.mode,['bars','circle','wave','particles','mirror','spiral','rings','avee','ncs','catpulse'])||!color(s.background)||!color(s.primary)||!color(s.secondary)||!plain(s.title,100))return null;
+    !enums(s.mode,['bars','circle','wave','particles','mirror','spiral','rings','avee','ncs','catpulse','aura'])||!color(s.background)||!color(s.primary)||!color(s.secondary)||!plain(s.title,100))return null;
   for(const n of ['intensity','glow','shake','particles','zoom'] as const){if(!finite(s[n],0,100))return null;}
   if(s.vignette!==undefined&&!finite(s.vignette,0,100)||s.grain!==undefined&&!finite(s.grain,0,100)||
     s.beatPulse!==undefined&&!finite(s.beatPulse,0,100)||s.bitrate!==undefined&&![2,5,8].includes(s.bitrate)||
