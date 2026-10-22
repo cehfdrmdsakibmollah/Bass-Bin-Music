@@ -270,11 +270,15 @@ export default function Studio(){
       const track=parseUpload(kind,file);
       await saveAsset({id:track.assetId!,kind,name:file.name,file});
       const beatMap=await attachAsset(track.assetId!);
+      const sourceDuration=beatMap?.duration||(audio.current&&Number.isFinite(audio.current.duration)?audio.current.duration:20);
       commit(p=>{
-        const tracks=kind==='audio'?p.tracks.filter(x=>x.kind!=='audio'):[...p.tracks];
-        return {...p,updatedAt:Date.now(),tracks:[{...track,duration:p.duration},...tracks],
+        const length=kind==='audio'?Math.min(MAX_COMPOSITION_SECONDS,Math.max(1,sourceDuration)):p.duration;
+        const base=kind==='audio'?resizeComposition(p,length):p;
+        const tracks=kind==='audio'?base.tracks.filter(x=>x.kind!=='audio'):[...base.tracks];
+        return {...base,updatedAt:Date.now(),tracks:[{...track,duration:length,...(kind==='audio'?{sourceDuration:length}: {})},...tracks],
           ...(kind==='audio'?{beatSync:beatMap?{enabled:true,style:'drift' as const,intensity:70,offset:0,map:beatMap}:undefined}: {})};
       });
+      if(kind==='audio'){setSourceSeconds(Math.min(MAX_COMPOSITION_SECONDS,sourceDuration));setTrimIn(0);setTrimOut(Math.min(MAX_COMPOSITION_SECONDS,sourceDuration));setPanel('shorts');}
       setSelected(track.id);setWarning(`${file.name} added. Media stays on this device.`);
     }catch(e){setWarning(e instanceof Error?e.message:'Could not open media');}
   };
@@ -292,7 +296,41 @@ export default function Studio(){
   const splitAtPlayhead=()=>{
     if(!active)return;
     const id=`track-${crypto.randomUUID()}`;
-    commit(p=>splitTrack(p,active.id,positionRef.current,id));
+    const before=projectRef.current;
+    const next=splitTrack(before,active.id,positionRef.current,id);
+    if(next===before){setWarning('Move the playhead inside a clip before splitting.');return;}
+    commit(()=>next);setSelected(id);
+  };
+  const addShort=(start:number,end:number,shorts=true)=>{
+    const p=projectRef.current,source=p.tracks.find(t=>t.kind==='audio'&&t.assetId);
+    if(!source?.assetId){setWarning('Import a song before creating a Shorts cut.');return;}
+    const next=applyShortHook(p,source.assetId,start,end,sourceMap);
+    if(next===p){setWarning('Invalid audio range; select a shorter interval inside your song.');return;}
+    commit(()=>shorts?next:{...next,settings:p.settings});
+    setSelected(source.id);setTrimIn(start);setTrimOut(end);seek(0);
+    setWarning(`Applied ${(end-start).toFixed(1)}s ${shorts?'vertical Shorts':'manual'} crop. Undo restores the prior timeline.`);
+  };
+  const joinAudio=()=>{
+    const p=projectRef.current,clip=p.tracks.find(t=>t.id===selected&&t.kind==='audio');
+    if(!clip){setWarning('Select an audio segment to join with the following segment.');return;}
+    const next=joinNextAudio(p,clip.id);
+    if(next===p){setWarning('No matching next audio clip or not enough timeline room.');return;}
+    commit(()=>next);setWarning('Audio clips joined or aligned on the timeline; Undo is available.');
+  };
+  const restoreFull=()=>{
+    const p=projectRef.current,source=p.tracks.find(t=>t.kind==='audio'&&t.assetId);
+    if(!source?.assetId){setWarning('Import audio first.');return;}
+    const total=Math.min(MAX_COMPOSITION_SECONDS,sourceSeconds||source.sourceDuration||p.duration);
+    const expanded=resizeComposition(p,total);
+    const tracks=[{...source,start:0,clipStart:0,duration:total,sourceDuration:total,fadeIn:0,fadeOut:0},...expanded.tracks.filter(t=>t.kind!=='audio')];
+    commit(()=>({...expanded,tracks,beatSync:sourceMap&&p.beatSync?{...p.beatSync,map:sourceMap}:p.beatSync}));
+    setTrimIn(0);setTrimOut(total);setSelected(source.id);seek(0);
+    setWarning('Full song timeline restored. Undo restores the previous cut.');
+  };
+  const markRange=(point:'in'|'out')=>{
+    const a=projectRef.current.tracks.find(t=>t.kind==='audio'&&t.start<=positionRef.current&&t.start+t.duration>=positionRef.current);
+    const at=Math.round(((a?.clipStart||0)+positionRef.current-(a?.start||0))*100)/100;
+    if(point==='in')setTrimIn(Math.max(0,at));else setTrimOut(Math.min(sourceSeconds||MAX_COMPOSITION_SECONDS,at));
   };
   const capturePng=()=>{
     if(!canvas.current)return;
