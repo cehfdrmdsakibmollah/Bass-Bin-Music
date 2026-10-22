@@ -34,6 +34,7 @@ test('signature Phonk template confirms before applying and respects cancellatio
  await page.goto('/studio');
  const nav=page.getByRole('navigation',{name:'Studio panels'});
  await nav.getByRole('button',{name:/templates/i}).click();
+ await page.getByRole('group',{name:'Template categories'}).getByRole('button',{name:'Signature Phonk'}).click();
  await page.getByRole('button',{name:/Midnight Drift/}).click();
  await expect(page.getByText(/Previewing: Midnight Drift/)).toBeVisible();
  await page.getByRole('button',{name:'Cancel Preview'}).click();
