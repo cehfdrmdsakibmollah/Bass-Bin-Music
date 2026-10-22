@@ -108,6 +108,57 @@ export function drawFrame(ctx:CanvasRenderingContext2D,settings:Settings,tracks:
         if(settings.mode==='circle'){ctx.beginPath();ctx.arc(cx,cy,r*.89,0,Math.PI*2);ctx.lineWidth=min*.004;ctx.strokeStyle=settings.secondary;ctx.stroke();}
         break;
       }
+      case 'avee':case 'ncs':case 'catpulse':{
+        // All three original geometry renderers react to actual analyser bins.
+        // No third-party logo or protected Avee preset geometry is embedded.
+        const cx=w*.5,cy=h*.49,ring=min*(settings.mode==='ncs'?.225:.19);
+        const total=160,levels=Array.from({length:total},(_,i)=>amp(Math.floor(i/total*count)));
+        const isCat=settings.mode==='catpulse';
+        const isNcs=settings.mode==='ncs';
+        ctx.lineJoin='round';
+        for(let layer=0;layer<(isNcs?2:3);layer++){
+          ctx.beginPath();
+          for(let i=0;i<=total;i++){
+            const angle=i/total*Math.PI*2-Math.PI/2,delta=levels[i%total];
+            const teeth=isNcs?min*.105:isCat?min*.19:min*.17;
+            const radius=ring+Math.max(.03,delta)*teeth*(layer===0?1:layer===1?.40:.13);
+            const x=cx+Math.cos(angle)*radius,y=cy+Math.sin(angle)*radius;
+            if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+          }
+          ctx.closePath();ctx.lineWidth=min*(layer===0?.006:.0027);
+          ctx.strokeStyle=layer===1?settings.secondary:settings.primary;
+          ctx.globalAlpha=layer===0?1:layer===1?.62:.28;ctx.stroke();ctx.globalAlpha=1;
+        }
+        if(isCat){
+          // Cat-ear geometry, responsive to kick intensity, without using existing logos.
+          ctx.beginPath();const ear=ring*.76,top=cy-ring*.77,earTop=top-ring*(.48+energy*.18);
+          ctx.moveTo(cx-ring*.93,cy-ring*.24);
+          ctx.lineTo(cx-ear,earTop);
+          ctx.lineTo(cx-ring*.22,top);
+          ctx.moveTo(cx+ring*.22,top);
+          ctx.lineTo(cx+ear,earTop);
+          ctx.lineTo(cx+ring*.93,cy-ring*.24);
+          ctx.strokeStyle=settings.secondary;ctx.lineWidth=min*.009;ctx.stroke();
+        }
+        ctx.beginPath();ctx.arc(cx,cy,ring*.78,0,Math.PI*2);
+        ctx.fillStyle='rgba(3,5,16,.62)';ctx.fill();
+        ctx.lineWidth=Math.max(2,min*.003);ctx.strokeStyle=settings.secondary;ctx.stroke();
+        if(isNcs){
+          const span=ring*.44;
+          ctx.fillStyle=settings.primary;ctx.globalAlpha=.8;
+          for(let i=0;i<21;i++){
+            const v=levels[i*7%total];
+            const x=cx-span+(span*2)*(i/20);
+            const barHeight=min*.12*v;
+            ctx.fillRect(x,cy-barHeight/2,Math.max(2,min*.003),barHeight);
+          }
+          ctx.globalAlpha=1;
+        } else {
+          ctx.save();ctx.fillStyle=settings.secondary;ctx.globalAlpha=.12+.16*energy;
+          ctx.beginPath();ctx.arc(cx,cy,ring*.51,0,Math.PI*2);ctx.fill();ctx.restore();
+        }
+        break;
+      }
       case 'wave':{
         for(let j=0;j<3;j++){
           ctx.beginPath();ctx.lineWidth=Math.max(3,min*.004);ctx.strokeStyle=j===1?settings.secondary:settings.primary;
