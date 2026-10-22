@@ -19,9 +19,9 @@ test('mobile studio has usable six-button bar, fixed drawers, Aura preview + con
   await aura.click();
   await page.getByRole('button',{name:'Apply Template'}).click();
   await expect(page.locator('.studio-side')).toHaveCSS('visibility','hidden');
-  await page.getByRole('button',{name:/Ultra Aura 15s/}).click();
+  await page.getByRole('button',{name:/Dark Phonk 15s/}).click();
   await expect(page.getByLabel('Video aspect ratio')).toHaveValue('9:16');
-  await expect(page.getByText(/Ultra Aura 9:16 Reel ready/)).toBeVisible();
+  await expect(page.getByText(/Dark Skull Bass 9:16 Reel ready/)).toBeVisible();
   await mobile.getByRole('button',{name:'Export'}).click();
   await expect(page.locator('.studio-right')).toHaveCSS('visibility','visible');
   await expect(page.getByRole('combobox',{name:'Export video format'})).toHaveValue('instagram');
