@@ -8,7 +8,7 @@ export type Transition = 'none' | 'fade' | 'slide' | 'zoom';
 export type Track = {
   id:string; kind:TrackKind; label:string; start:number; duration:number;
   hidden:boolean; muted:boolean; assetId?:string; text?:string;
-  clipStart?:number; volume?:number; motion?:Partial<Motion>;
+  clipStart?:number; sourceDuration?:number; volume?:number; motion?:Partial<Motion>;
   keyframes?:MotionKeyframe[]; transition?:Transition;
   fontSize?:number; fontFamily?:'sans'|'serif'|'mono'; fontColor?:string;
   fit?:'cover'|'contain'; blend?:'normal'|'screen'|'multiply'|'overlay';
