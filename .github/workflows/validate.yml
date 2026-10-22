@@ -1,0 +1,33 @@
+name: Validate BASS BIN MUSIC
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "package.json"
+      - "tsconfig.json"
+      - ".github/workflows/validate.yml"
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Automated tests
+        run: npm test
+      - name: TypeScript verification
+        run: npm run typecheck
+      - name: ESLint verification
+        run: npm run lint
+      - name: Next.js production build
+        run: npm run build
