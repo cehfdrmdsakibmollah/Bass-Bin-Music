@@ -15,6 +15,9 @@ import type {StudioProject,Track,TrackKind,Settings,Motion} from '@/lib/types';
 type Panel='assets'|'templates'|'effects'|'beats'|'inspector'|'director';
 const icon:Record<TrackKind,string>={audio:'♫',image:'▣',video:'▶',text:'T',visualizer:'▥',effect:'✦'};
 function setVideoPlaybackRate(element:HTMLVideoElement,rate:number){element.playbackRate=rate;}
+function setVideoCurrentTime(element:HTMLVideoElement,seconds:number){element.currentTime=seconds;}
+function clockNow(){return performance.now();}
+function wallNow(){return Date.now();}
 function parseUpload(kind:'audio'|'image'|'video',file:File):Track{
   return {id:`track-${crypto.randomUUID()}`,kind,label:file.name.slice(0,35),start:0,duration:20,hidden:false,muted:false,assetId:`asset-${crypto.randomUUID()}`};
 }
@@ -166,7 +169,7 @@ export default function Studio(){
       if(clip){const rate=clip.playbackRate||1,expected=(t-clip.start)*rate+(clip.clipStart||0);
         if(Math.abs(m.playbackRate-rate)>.001)setVideoPlaybackRate(m,rate);
         if(Number.isFinite(m.duration)&&expected>=m.duration){m.pause();continue;}
-        if(Math.abs((m.currentTime||0)-expected)>.23){try{m.currentTime=expected;}catch{}}
+        if(Math.abs((m.currentTime||0)-expected)>.23){try{setVideoCurrentTime(m,expected);}catch{}}
         if(shouldPlay&&m.paused)void m.play().catch(()=>{});
       }else if(!m.paused)m.pause();
     }
@@ -177,7 +180,7 @@ export default function Studio(){
       const p=projectRef.current;
       const d=dimensions(p.settings.aspect,p.settings.width);
       if(element.width!==d.width||element.height!==d.height){element.width=d.width;element.height=d.height;}
-      const now=performance.now();let t=playRef.current.base;
+      const now=clockNow();let t=playRef.current.base;
       if(playRef.current.playing){
         t=playRef.current.base+(now-playRef.current.at)/1000;
         if(t>=p.duration){t=p.duration;playRef.current.playing=false;playRef.current.base=t;setPlaying(false);audio.current?.pause();}
@@ -192,7 +195,7 @@ export default function Studio(){
     raf.current=requestAnimationFrame(render);return()=>cancelAnimationFrame(raf.current);
   },[mediaReady]);
   const seek=(value:number)=>{
-    const t=clampTime(value,projectRef.current.duration);playRef.current.base=t;playRef.current.at=performance.now();positionRef.current=t;setPosition(t);
+    const t=clampTime(value,projectRef.current.duration);playRef.current.base=t;playRef.current.at=clockNow();positionRef.current=t;setPosition(t);
     syncMedia(t,playRef.current.playing);
   };
   const ensureAudio=async()=>{
@@ -228,7 +231,7 @@ export default function Studio(){
     try{
       if(positionRef.current>=projectRef.current.duration)seek(0);
       await ensureAudio();
-      playRef.current={playing:true,base:positionRef.current,at:performance.now()};syncMedia(positionRef.current,true);setPlaying(true);
+      playRef.current={playing:true,base:positionRef.current,at:clockNow()};syncMedia(positionRef.current,true);setPlaying(true);
     }catch(e){setWarning(`Playback was blocked: ${e instanceof Error?e.message:'unsupported format'}`)}
   };
   const upload=async(kind:'audio'|'image'|'video',file:File|null|undefined)=>{
@@ -329,7 +332,7 @@ export default function Studio(){
       stream=new MediaStream([...nativeStream.getVideoTracks(),...(streamOut.current?.stream.getAudioTracks()||[])]);
       const chunks:Blob[]=[];
       const rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:(p.settings.bitrate||5)*1_000_000});recorder.current=rec;
-      const start=performance.now();
+      const start=clockNow();
       rec.ondataavailable=(e)=>{if(e.data.size>0)chunks.push(e.data)};
       rec.onerror=()=>setWarning('Browser recording failed. Try a shorter duration or lower resolution.');
       rec.onstop=()=>{
@@ -347,7 +350,7 @@ export default function Studio(){
       rec.start(250);
       playRef.current={playing:true,base:0,at:start};syncMedia(0,true);setPlaying(true);
       timer=setInterval(()=>{
-        const elapsed=(performance.now()-start)/1000;
+        const elapsed=(clockNow()-start)/1000;
         setExportPercent(Math.min(100,Math.round(elapsed/p.duration*100)));
         if(elapsed>=p.duration){if(rec.state!=='inactive')rec.stop();}
       },100);
@@ -365,7 +368,7 @@ export default function Studio(){
     }
   }));
   const tapTempo=()=>{
-    const now=performance.now();
+    const now=clockNow();
     const taps=tappedTimes.current;
     if(taps.length&&now-taps[taps.length-1]>2200)taps.length=0;
     taps.push(now);if(taps.length>8)taps.shift();
@@ -465,7 +468,7 @@ export default function Studio(){
   const reset=()=>{
     if(!confirm('Reset all project settings and timeline tracks? Your stored media files are not deleted.'))return;
     audio.current?.pause();audio.current?.removeAttribute('src');audio.current?.load();
-    const empty=createProject(Date.now());commit(()=>empty);setSelected('visualizer');seek(0);
+    const empty=createProject(wallNow());commit(()=>empty);setSelected('visualizer');seek(0);
   };
   useEffect(()=>{
     const down=(e:KeyboardEvent)=>{
