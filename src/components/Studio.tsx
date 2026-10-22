@@ -37,7 +37,7 @@ export default function Studio(){
   const [mobileSheet,setMobileSheet]=useState<'closed'|'tools'|'export'>('closed');
   const [previewTemplate,setPreviewTemplate]=useState<string|null>(null);
   const previewTemplateRef=useRef<string|null>(null);
-  const [templateCategory,setTemplateCategory]=useState('All');
+  const [templateCategory,setTemplateCategory]=useState('Signature Phonk');
   const [hookLength,setHookLength]=useState<15|30|60>(15);
   const [fxScope,setFxScope]=useState<'selected'|'all'>('all');
   const [trendQuery,setTrendQuery]=useState('brazilian phonk');
