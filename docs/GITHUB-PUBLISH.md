@@ -1,33 +1,44 @@
-# Publish v0.4 to GitHub
+# GitHub source repository — BASS BIN MUSIC v0.4
 
-Target: https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music
+**Status: uploaded successfully to `main`.** The full Auto Director Pro v0.4 source, tests, demo, documentation, original artwork, and sample audio were committed to:
 
-The connected repository was empty before its README was initialized. This package contains the full v0.4 sources and binary artwork, ready to publish from Windows. **Until the script runs successfully, a remote README alone does not mean the project source has been uploaded.**
+https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music
 
-## Easy Windows method
+Initial full-source commit: `dd1cb16e77f0c0b839646ae6e658aea16209b2fa`.
 
-1. Download the **BASS_BIN_MUSIC_GitHub_Ready_v0.4.zip** from ChatGPT.
-2. Extract it. Open its **bass-bin-music** folder.
-3. Install Git for Windows and sign in to GitHub when prompted.
-4. Double-click **publish-to-github.bat**.
-5. Review the staged summary. Type `YES` to approve the upload.
-6. Check the repository in your browser after Git reports a successful push.
+## Clone and run
 
-The script clones `main` and overlays the project, without deleting unrelated remote files. It ignores local secrets and generated build folders. It does not modify your existing local working directory or use a personal-access token saved in source code.
+```bash
+git clone https://github.com/cehfdrmdsakibmollah/Bass-Bin-Music.git
+cd Bass-Bin-Music
+npm install
+npm run dev
+```
 
-## Manual method
+Open http://localhost:3000/studio.
 
-Clone the existing repository, copy **the contents** of `bass-bin-music` into the clone, then run:
+## Run release checks
+
+```bash
+npm test
+npm run typecheck
+npm run lint
+npm run build
+```
+
+The GitHub Actions workflow `.github/workflows/validate.yml` runs tests, typechecks, linting and a Next.js production build on source changes. **Check the Actions tab for the actual outcome; a committed source tree does not imply a successful production build.**
+
+## Updating the repository from Windows
+
+For later updates, place modified project files inside your local clone, then:
 
 ```powershell
-git add --all
 git status
-git commit -m "feat: import BASS BIN MUSIC Auto Director Pro v0.4"
+git add --all
+git commit -m "feat: update BASS BIN MUSIC"
 git push origin main
 ```
 
-## CI status
+The optional `publish-to-github.bat` helper can also overlay an extracted source folder onto a new clone and requests explicit YES confirmation before pushing.
 
-The included GitHub Actions workflow runs npm tests, typecheck, lint, and build when source files are pushed. This does not mean those checks already passed on GitHub. Review the Actions tab for the actual results.
-
-Do not upload `.env`, API keys, admin SDK JSON files, tokens, or private media to the public GitHub repository.
+Never commit `.env`, personal-access tokens, API keys, private service-account JSON, or third-party copyrighted media. This repository is public.
