@@ -16,6 +16,12 @@ export const templates: Template[] = [
   { slug:'laser-tunnel', name:'Laser Tunnel', category:'Cinematic', description:'Emerald laser motion with a spiral high-energy spectrum.', colors:['#43ffb4','#02a6ff'], mode:'spiral', energy:87, tags:['laser','tunnel','techno'] },
   { slug:'trance-rings', name:'Trance Rings', category:'EDM', description:'Triple concentric neon spectrum with crystal blue accents.', colors:['#af73ff','#40eaff'], mode:'rings', energy:76, tags:['rings','trance','edm'] },
   { slug:'rainy-drift', name:'Rainy Drift', category:'Chill', description:'Low-light violet reflections for atmospheric night-driving edits.', colors:['#839dff','#f159d7'], mode:'mirror', energy:58, tags:['night','drift','rain'] },
+  {slug:'avee-bass-reactor',name:'Avee Inspired Bass Reactor',category:'Avee Inspired',description:'Original editable elliptical radial spectrum that reacts to heavy phonk kicks.',colors:['#38f8ff','#fa49e5'],mode:'avee',energy:90,tags:['avee','neon','orbital']},
+  {slug:'avee-darkwave',name:'Midnight Cat Pulse',category:'Avee Inspired',description:'Neon cat-ear contours above a bass-driven orbital ring. Original geometry.',colors:['#a95cff','#00d9ff'],mode:'catpulse',energy:96,tags:['avee','cat','phonk']},
+  {slug:'ncs-prism',name:'NCS Inspired Prism Halo',category:'NCS Inspired',description:'Minimal bright ring with independent pulse, no NCS branding or logos.',colors:['#46d5ff','#ffffff'],mode:'ncs',energy:68,tags:['ncs-style','halo','spectrum']},
+  {slug:'ncs-night-ring',name:'Aurora Night Halo',category:'NCS Inspired',description:'Landscape-ready symmetric music halo and restrained blue ambience.',colors:['#22fca1','#277dff'],mode:'ncs',energy:72,tags:['ncs-style','night','halo']},
+  {slug:'phonk-cobrawave',name:'Cobra Phonk Glitch',category:'Phonk',description:'Saturated scarlet neon ring and aggressive cross frequency edges.',colors:['#ff334d','#a34eff'],mode:'avee',energy:99,tags:['hard','phonk','glitch']},
+  {slug:'phonk-purple-shift',name:'Purple Drift Spectrum',category:'Drift',description:'Purple underground neon visualizer for original drifting footage.',colors:['#ae54ff','#31baff'],mode:'catpulse',energy:85,tags:['drift','phonk','purple']},
   { slug:'digital-voltage', name:'Digital Voltage', category:'Bass', description:'Electric neon orange energy spirals for punchy drops.', colors:['#ff9354','#ff3dc8'], mode:'spiral', energy:99, tags:['voltage','bass','drop'] }
 ];
 export const defaultSettings: Settings = {
