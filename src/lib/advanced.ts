@@ -53,7 +53,7 @@ export function snapTime(t:number,beats:number[],tolerance=.12):number {
   const index=beats.reduce((best,beat,i)=>Math.abs(beat-t)<Math.abs(beats[best]-t)?i:best,0);
   return Math.abs(beats[index]-t)<=tolerance?beats[index]:t;
 }
-export function trackTransition(track:Track,time:number):{opacity:number;dx:number;scale:number}{
+export function trackTransition(track:Track,time:number):{opacity:number;dx:number;scale:number;rotation?:number}{
   if(track.transition==='none'||!track.transition)return {opacity:1,dx:0,scale:1};
   const into=Math.min(1,Math.max(0,(time-track.start)/.45));
   const out=Math.min(1,Math.max(0,(track.start+track.duration-time)/.45));
@@ -62,6 +62,6 @@ export function trackTransition(track:Track,time:number):{opacity:number;dx:numb
   if(track.transition==='slide')return {opacity:1,dx:(1-f)*-.23,scale:1};
   if(track.transition==='whip')return {opacity:1,dx:(1-f)*.8,scale:1.08+(.08*(1-f))};
   if(track.transition==='glitch')return {opacity:.68+.32*f,dx:Math.sin(f*43)*(1-f)*.06,scale:1};
-  if(track.transition==='spin')return {opacity:f,dx:0,scale:.65+.35*f};
+  if(track.transition==='spin')return {opacity:f,dx:0,scale:.65+.35*f,rotation:(1-f)*-180};
   return {opacity:1,dx:0,scale:.80+f*.20};
 }
